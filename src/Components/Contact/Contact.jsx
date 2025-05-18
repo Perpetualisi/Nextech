@@ -38,10 +38,15 @@ const Contact = () => {
         <form
           className="contact-form"
           data-aos="fade-up"
-          action="https://formspree.io/f/xyzwoqqv"
+          action="https://formsubmit.co/perpetualokan0@gmail.com"
           method="POST"
         >
           <h3 data-aos="fade-up" data-aos-delay="100">Start a Project</h3>
+
+          {/* Hidden fields for Formsubmit */}
+          <input type="hidden" name="_captcha" value="false" />
+          <input type="hidden" name="_next" value="https://yourwebsite.com/thank-you.html" />
+
           <input type="text" name="name" placeholder="Full Name" required data-aos="fade-up" data-aos-delay="200" />
           <input type="email" name="email" placeholder="Email Address" required data-aos="fade-up" data-aos-delay="300" />
           <input type="text" name="company" placeholder="Company / Brand Name" data-aos="fade-up" data-aos-delay="400" />
