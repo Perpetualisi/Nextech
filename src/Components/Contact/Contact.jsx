@@ -45,7 +45,7 @@ const Contact = () => {
 
           {/* Hidden fields for Formsubmit */}
           <input type="hidden" name="_captcha" value="false" />
-          <input type="hidden" name="_next" value="https://yourwebsite.com/thank-you.html" />
+<input type="hidden" name="_next" value="https://nextech-coral.vercel.app/thank-you.html" />
 
           <input type="text" name="name" placeholder="Full Name" required data-aos="fade-up" data-aos-delay="200" />
           <input type="email" name="email" placeholder="Email Address" required data-aos="fade-up" data-aos-delay="300" />
