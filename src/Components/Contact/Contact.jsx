@@ -35,15 +35,21 @@ const Contact = () => {
       </div>
 
       <div className="contact-container">
-        <form className="contact-form" data-aos="fade-up">
+        <form
+          className="contact-form"
+          data-aos="fade-up"
+          action="https://formspree.io/f/xyzwoqqv"
+          method="POST"
+        >
           <h3 data-aos="fade-up" data-aos-delay="100">Start a Project</h3>
-          <input type="text" placeholder="Full Name" required data-aos="fade-up" data-aos-delay="200" />
-          <input type="email" placeholder="Email Address" required data-aos="fade-up" data-aos-delay="300" />
-          <input type="text" placeholder="Company / Brand Name" data-aos="fade-up" data-aos-delay="400" />
-          <input type="tel" placeholder="Phone Number" data-aos="fade-up" data-aos-delay="500" />
-          <input type="date" required data-aos="fade-up" data-aos-delay="600" />
-          <input type="time" required data-aos="fade-up" data-aos-delay="700" />
+          <input type="text" name="name" placeholder="Full Name" required data-aos="fade-up" data-aos-delay="200" />
+          <input type="email" name="email" placeholder="Email Address" required data-aos="fade-up" data-aos-delay="300" />
+          <input type="text" name="company" placeholder="Company / Brand Name" data-aos="fade-up" data-aos-delay="400" />
+          <input type="tel" name="phone" placeholder="Phone Number" data-aos="fade-up" data-aos-delay="500" />
+          <input type="date" name="date" required data-aos="fade-up" data-aos-delay="600" />
+          <input type="time" name="time" required data-aos="fade-up" data-aos-delay="700" />
           <textarea
+            name="message"
             placeholder="Project Description / Message"
             rows="6"
             required

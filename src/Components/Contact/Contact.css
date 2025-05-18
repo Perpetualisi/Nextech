@@ -70,6 +70,9 @@
 
 .submit-btn:hover {
   background: #2563eb;
+  transform: scale(1.05);
+  background-color: #0056b3;
+  transition: all 0.3s ease;
 }
 
 .contact-info {
@@ -121,6 +124,28 @@
   font-size: 0.95rem;
   color: #444;
 }
+
+input, textarea {
+  transition: all 0.3s ease;
+}
+
+input:focus, textarea:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 8px rgba(0,123,255,0.3);
+}
+
+.animated-heading {
+  transition: opacity 0.5s ease-in-out;
+  animation: fadeInOut 3s ease-in-out infinite;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateY(10px); }
+  10% { opacity: 1; transform: translateY(0); }
+  90% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-10px); }
+}
+
 @media (max-width: 768px) {
   .contact-container {
     grid-template-columns: 1fr;
@@ -165,29 +190,4 @@
     width: 100%;
     text-align: center;
   }
-}
-input, textarea {
-  transition: all 0.3s ease;
-}
-
-input:focus, textarea:focus {
-  border-color: #007bff;
-  box-shadow: 0 0 8px rgba(0,123,255,0.3);
-}
-
-.submit-btn:hover {
-  transform: scale(1.05);
-  background-color: #0056b3;
-  transition: all 0.3s ease;
-}
-.animated-heading {
-  transition: opacity 0.5s ease-in-out;
-  animation: fadeInOut 3s ease-in-out infinite;
-}
-
-@keyframes fadeInOut {
-  0% { opacity: 0; transform: translateY(10px); }
-  10% { opacity: 1; transform: translateY(0); }
-  90% { opacity: 1; transform: translateY(0); }
-  100% { opacity: 0; transform: translateY(-10px); }
 }
