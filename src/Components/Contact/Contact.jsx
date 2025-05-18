@@ -38,7 +38,7 @@ const Contact = () => {
         <form
           className="contact-form"
           data-aos="fade-up"
-          action="https://formsubmit.co/perpetualokan0@gmail.com"
+          action="https://formsubmit.co/26c5f71fda07ffbdc912a6d46cb82242"
           method="POST"
         >
           <h3 data-aos="fade-up" data-aos-delay="100">Start a Project</h3>
