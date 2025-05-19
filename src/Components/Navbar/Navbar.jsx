@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import "./Navbar.css";
+import { FaWhatsapp } from "react-icons/fa";
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -32,33 +33,51 @@ const Navbar = () => {
   };
 
   return (
-    <header className={`navbar ${scrolled ? "scrolled" : ""}`} data-aos="fade-down">
-      <div className="navbar-container">
-<div className="logo">
-  NexTech <span className="desktop-only">Innovations</span>
-</div>
+    <>
+      <header className={`navbar ${scrolled ? "scrolled" : ""}`} data-aos="fade-down">
+        <div className="navbar-container">
+          <div className="logo">
+            NexTech <span className="desktop-only">Innovations</span>
+          </div>
 
-        <nav className={`nav-links ${menuOpen ? "open" : ""}`}>
-          {navLinks.map((link) => (
-            <button key={link} onClick={() => handleScrollTo(link)}>
-              {link}
-            </button>
-          ))}
-          <a href="#contact" className="cta-btn" onClick={() => setMenuOpen(false)}>
-            GET STARTED
-          </a>
-        </nav>
+          <nav className={`nav-links ${menuOpen ? "open" : ""}`}>
+            {navLinks.map((link) => (
+              <button key={link} onClick={() => handleScrollTo(link)}>
+                {link}
+              </button>
+            ))}
 
-        <div
-          className={`hamburger ${menuOpen ? "open" : ""}`}
-          onClick={() => setMenuOpen(!menuOpen)}
-        >
-          <span></span>
-          <span></span>
-          <span></span>
+            <a
+              href="#contact"
+              className="cta-btn"
+              onClick={() => setMenuOpen(false)}
+            >
+              GET STARTED
+            </a>
+          </nav>
+
+          <div
+            className={`hamburger ${menuOpen ? "open" : ""}`}
+            onClick={() => setMenuOpen(!menuOpen)}
+          >
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+
+      {/* Floating WhatsApp Button */}
+      <a
+        href="https://wa.me/2348103558837"
+        className="floating-whatsapp"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Chat on WhatsApp"
+      >
+        <FaWhatsapp />
+      </a>
+    </>
   );
 };
 

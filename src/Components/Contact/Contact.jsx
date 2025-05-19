@@ -20,7 +20,7 @@ const Contact = () => {
 
     const interval = setInterval(() => {
       setCurrentHeading((prev) => (prev + 1) % headings.length);
-    }, 3000); 
+    }, 3000);
 
     return () => clearInterval(interval);
   }, []);
@@ -45,7 +45,7 @@ const Contact = () => {
 
           {/* Hidden fields for Formsubmit */}
           <input type="hidden" name="_captcha" value="false" />
-<input type="hidden" name="_next" value="https://nextech-coral.vercel.app/thank-you.html" />
+          <input type="hidden" name="_next" value="https://nextech-coral.vercel.app/thank-you.html" />
 
           <input type="text" name="name" placeholder="Full Name" required data-aos="fade-up" data-aos-delay="200" />
           <input type="email" name="email" placeholder="Email Address" required data-aos="fade-up" data-aos-delay="300" />
@@ -81,6 +81,7 @@ const Contact = () => {
             <a href="https://github.com/Perpetualisi" target="_blank" rel="noreferrer">GitHub</a>
             <a href="mailto:perpetualokan0@gmail.com">Email</a>
             <a href="https://www.linkedin.com/in/perpetual-okan-759655344/" target="_blank" rel="noreferrer">LinkedIn</a>
+            <a href="https://wa.me/2348103558837" target="_blank" rel="noreferrer">WhatsApp</a>
           </div>
 
           <div className="cta-message" data-aos="flip-up" data-aos-delay="700">
