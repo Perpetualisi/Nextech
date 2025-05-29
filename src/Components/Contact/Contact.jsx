@@ -43,7 +43,6 @@ const Contact = () => {
         >
           <h3 data-aos="fade-up" data-aos-delay="100">Start a Project</h3>
 
-          {/* Hidden fields for Formsubmit */}
           <input type="hidden" name="_captcha" value="false" />
           <input type="hidden" name="_next" value="https://nextech-coral.vercel.app/thank-you.html" />
 
