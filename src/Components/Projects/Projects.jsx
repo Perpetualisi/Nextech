@@ -1,28 +1,30 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import "./Projects.css";
 
 const projects = [
   {
-    title: "Tasty Bite – Food Website",
-    description: "A modern recipe site with beautiful UI, menu slider, and mobile responsiveness.",
-    images: ["/tasty1.jpg", "/tasty2.jpg", "/tasty3.jpg"],
-    link: "https://tasty-bite-eight.vercel.app/",
+    title: "Conotex Integrated Services – IT & Low-Voltage Solutions",
+    description:
+      "Conotex Integrated Services (CIS), a division of Conotex Systems & Energy Services LLC, is a trusted nationwide provider of low-voltage and managed IT solutions. Since 2011, we have partnered with leading brands across industries to design, deploy, and manage critical infrastructure with precision and reliability.",
+    images: ["/conotex1.png", "/conotex2.webp", "/conotex3.jpg"],
+    link: "https://www.conotextech.com/",
   },
   {
     title: "Vendo – eCommerce Website",
-    description: "A stylish frontend store with product grid, categories, and promo banners.",
+    description:
+      "A stylish frontend store with product grid, categories, and promo banners.",
     images: ["/vendo1.jpg", "/vendo2.jpg", "/vendo3.jpg"],
     link: "https://my-ecommerce-nine-iota.vercel.app/",
   },
   {
-    title: "IceCream – Brand Website",
-    description: "A sleek single-product site for an ice cream brand built with React and CSS.",
-    images: ["/ice1.jpg", "/ice2.jpg", "/ice3.jpg"],
-    link: "https://ice-cream-iota-peach.vercel.app/",
+    title: "WearEiko – African-Inspired Fashion",
+    description:
+      "WearEiko is a fashion movement that blends African heritage with bold, modern design, empowering self-expression through style. From vibrant Ankara prints to chic neutrals and special-occasion looks, our pieces are curated to reflect your unique personality. Every garment is crafted with care and meaning for dreamers, professionals, and creatives who dress with purpose. Locally inspired, globally admired, our fashion transitions seamlessly from work to celebration, without compromising identity. Rooted in sustainability, inclusion, and innovation, WearEiko supports communities and tells stories through every stitch. Welcome to WearEiko — where fashion is culture, and every look makes a statement.",
+    images: ["/wear1.jpg", "/wear2.jpg", "/wear3.jpg"],
+    link: "https://weareiko.com",
   },
-  
 ];
 
 const Projects = () => {
@@ -30,12 +32,39 @@ const Projects = () => {
     AOS.init({ duration: 1000, once: true });
   }, []);
 
+  // Track active image per project
+  const [activeImages, setActiveImages] = useState(
+    projects.map(() => 0) // initially first image for each project
+  );
+
+  const nextImage = (projectIndex) => {
+    setActiveImages((prev) =>
+      prev.map((imgIndex, i) =>
+        i === projectIndex
+          ? (imgIndex + 1) % projects[i].images.length
+          : imgIndex
+      )
+    );
+  };
+
+  const prevImage = (projectIndex) => {
+    setActiveImages((prev) =>
+      prev.map((imgIndex, i) =>
+        i === projectIndex
+          ? (imgIndex - 1 + projects[i].images.length) %
+            projects[i].images.length
+          : imgIndex
+      )
+    );
+  };
+
   return (
     <section id="projects" className="projects-section">
       <div className="projects-header" data-aos="fade-up">
         <h2>Featured Projects</h2>
         <p>
-          We build cutting-edge digital experiences that deliver real business results.
+          We build cutting-edge digital experiences that deliver real business
+          results.
         </p>
       </div>
 
@@ -45,14 +74,27 @@ const Projects = () => {
             className="project-card"
             key={index}
             data-aos="zoom-in"
-            data-aos-delay={index * 100}
+            data-aos-delay={index * 150}
           >
             <div className="project-image-slider">
-              <div className="slider-track">
-                {project.images.map((img, imgIndex) => (
-                  <img key={imgIndex} src={img} alt={`${project.title} ${imgIndex + 1}`} />
-                ))}
-              </div>
+              <img
+                src={project.images[activeImages[index]]}
+                alt={`${project.title} ${
+                  activeImages[index] + 1
+                }`}
+              />
+              <button
+                className="slider-btn prev"
+                onClick={() => prevImage(index)}
+              >
+                ‹
+              </button>
+              <button
+                className="slider-btn next"
+                onClick={() => nextImage(index)}
+              >
+                ›
+              </button>
             </div>
             <div className="project-content">
               <h3>{project.title}</h3>
