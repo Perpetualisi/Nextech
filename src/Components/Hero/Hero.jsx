@@ -1,46 +1,44 @@
-import { useEffect, useState } from "react";
+import React from "react";
 import "./Hero.css";
 
-const titles = [
-  "NexTech Innovations",
-  "InnovaLab Systems",
-  "FutureSoft Solutions"
-];
-
-const phrases = [
-  "Future-Ready Solutions",
-  "Smart Digital Experiences",
-  "Creative Tech Ideas"
-];
-
-const subtitles = [
-  "Crafting digital experiences with creativity & precision.",
-  "Delivering intuitive and bold tech for tomorrow.",
-  "Empowering brands with futuristic design."
+const stats = [
+  { label: "Projects Completed", value: "150+" },
+  { label: "Client Satisfaction", value: "99%" },
+  { label: "Team Members", value: "25" },
+  { label: "24/7 Support", value: "Yes" }
 ];
 
 const Hero = () => {
-  const [index, setIndex] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setIndex((prev) => (prev + 1) % phrases.length);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, []);
-
   return (
     <section id="home" className="hero-section">
-      <div className="hero-overlay">
-        <div className="hero-content">
-          <h1 className="hero-title animate-slide">
-            Welcome to <span>{titles[index]}</span>
-          </h1>
-          <h2 className="typing-text animate-fade">{phrases[index]}</h2>
-          <p className="hero-subtitle animate-zoom">{subtitles[index]}</p>
+      <div className="hero-content">
+        <h1 className="hero-title">
+          Welcome to <span>NexTech Innovations</span>
+        </h1>
+        <p className="hero-subtitle">
+          Crafting innovative digital experiences with creativity, precision, and bold design. 
+          We transform ideas into smart, futuristic solutions that elevate brands, delight users, 
+          and drive growth in the digital world.
+        </p>
+
+        {/* CTA Buttons */}
+        <div className="hero-buttons">
           <a href="#contact" className="hero-btn">
-            Book a Demo
+            Get Started
           </a>
+          <a href="#projects" className="hero-btn secondary-btn">
+            View Our Work
+          </a>
+        </div>
+
+        {/* Statistics */}
+        <div className="hero-stats">
+          {stats.map((stat, index) => (
+            <div className="stat-item" key={index}>
+              <h2>{stat.value}</h2>
+              <p>{stat.label}</p>
+            </div>
+          ))}
         </div>
       </div>
     </section>

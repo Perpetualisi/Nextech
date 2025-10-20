@@ -1,4 +1,3 @@
-
 :root {
   --primary-color: #0a192f;
   --accent-color: #00bcd4;
@@ -6,25 +5,21 @@
   --transition-speed: 0.3s;
   --nav-height: 70px;
 }
+
 .desktop-only {
   display: inline;
 }
 
+/* ===== NAVBAR ===== */
 .navbar {
   position: fixed;
   width: 100%;
   height: var(--nav-height);
   top: 0;
   left: 0;
-  background: transparent;
-  color: var(--white);
+  background: white;
   z-index: 999;
   transition: background var(--transition-speed), box-shadow var(--transition-speed);
-}
-
-.navbar.scrolled {
-  background: var(--primary-color);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .navbar-container {
@@ -36,6 +31,8 @@
   justify-content: space-between;
   padding: 0 20px;
 }
+
+/* ===== FLOATING MESSAGE ICON ===== */
 .floating-message-wrapper {
   position: fixed;
   bottom: 20px;
@@ -99,16 +96,19 @@
   }
 }
 
+/* ===== LOGO ===== */
 .logo {
   font-size: 1.5rem;
   font-weight: bold;
   cursor: pointer;
+  color: #333;
 }
 
 .logo span {
   color: var(--accent-color);
 }
 
+/* ===== NAV LINKS ===== */
 .nav-links {
   display: flex;
   align-items: center;
@@ -116,23 +116,28 @@
   transition: right var(--transition-speed);
 }
 
-.nav-links button {
+/* Black nav links for desktop */
+.nav-links button,
+.nav-links a {
   background: none;
   border: none;
-  color: var(--white);
+  color: #000; /* black text */
   font-size: 1rem;
   cursor: pointer;
   transition: color var(--transition-speed);
 }
 
-.nav-links button:hover {
-  color: var(--accent-color);
+/* Hover effect for links */
+.nav-links button:hover,
+.nav-links a:hover {
+  color: var(--accent-color); /* blue on hover */
 }
 
+/* ===== CTA BUTTON ===== */
 .cta-btn {
   padding: 0.5rem 1.2rem;
-  background: var(--accent-color);
-  color: var(--primary-color);
+  background: var(--accent-color) !important; /* force blue */
+  color: var(--primary-color) !important;
   border-radius: 20px;
   font-weight: bold;
   text-decoration: none;
@@ -144,6 +149,7 @@
   color: var(--primary-color);
 }
 
+/* ===== HAMBURGER MENU ===== */
 .hamburger {
   display: none;
   flex-direction: column;
@@ -155,7 +161,7 @@
 .hamburger span {
   width: 25px;
   height: 3px;
-  background: var(--white);
+  background: #000; /* black on desktop */
   transition: all 0.3s ease;
 }
 
@@ -171,17 +177,19 @@
   transform: rotate(-45deg) translate(5px, -5px);
 }
 
+/* ===== RESPONSIVE MENU ===== */
 @media (max-width: 768px) {
   .nav-links {
     position: absolute;
     top: var(--nav-height);
     right: -100%;
-    background: var(--primary-color);
+    background: var(--primary-color); /* dark background for mobile menu */
     flex-direction: column;
     width: 100%;
     padding: 1.5rem 0;
     text-align: center;
   }
+
   .desktop-only {
     display: none;
   }
@@ -192,5 +200,23 @@
 
   .hamburger {
     display: flex;
+  }
+
+
+  .hamburger span {
+    /* Check background: if navbar is dark use white, else use black */
+    background: #000; /* black if navbar is light */
+  }
+
+
+  /* Mobile links should be white inside dark background */
+  .nav-links button,
+  .nav-links a {
+    color: var(--white);
+  }
+
+  .nav-links button:hover,
+  .nav-links a:hover {
+    color: var(--accent-color);
   }
 }
