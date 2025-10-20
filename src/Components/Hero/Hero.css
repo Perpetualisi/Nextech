@@ -4,42 +4,38 @@
   --white: #ffffff;
   --black: #000000;
   --transition-speed: 0.3s;
+  --nav-height: 70px; /* Set your navbar height here */
 }
 
 /* ===== HERO SECTION ===== */
 .hero-section {
+  position: relative;
   width: 100%;
-  min-height: 90vh;
+  min-height: calc(100vh - var(--nav-height)); /* full viewport minus navbar */
   background: var(--white);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 3rem 1rem;
+  padding: calc(var(--nav-height) + 20px) 1rem 3rem 1rem; /* top padding adjusts dynamically */
   box-sizing: border-box;
+  color: var(--black);
 }
 
 .hero-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center; /* center everything */
   text-align: center;
   max-width: 900px;
   width: 100%;
-  padding: 0 1rem;
-  box-sizing: border-box;
 }
 
 /* ===== HERO TITLE ===== */
 .hero-title {
-  font-size: clamp(1.8rem, 4vw, 3rem); /* scales with screen */
+  font-size: clamp(2rem, 5vw, 3rem);
   font-weight: 700;
   margin-bottom: 1rem;
   line-height: 1.2;
-  white-space: nowrap;        /* prevent wrapping */
-  overflow: hidden;           /* hide overflow */
-  text-overflow: ellipsis;    /* optional ellipsis if still too long */
-  text-align: center;         /* center on all screens */
+  word-wrap: break-word; /* ensures it doesn’t cut */
 }
+
 .hero-title span {
   color: var(--accent-color);
 }
@@ -50,8 +46,6 @@
   line-height: 1.6;
   margin-bottom: 2rem;
   color: var(--black);
-  width: 100%;
-  max-width: 800px; /* optional: prevent overly long lines */
 }
 
 /* ===== CTA BUTTONS ===== */
@@ -59,29 +53,20 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  align-items: center;
   gap: 1rem;
-  width: 100%;
-  max-width: 400px; /* container limit */
   margin-bottom: 3rem;
 }
 
-.hero-btn,
-.secondary-btn {
-  flex: 1 1 45%; /* buttons grow on larger screens */
-  text-align: center;
-  padding: 0.75rem 2rem;
-  border-radius: 50px;
-  font-weight: 600;
-  text-decoration: none;
-  white-space: nowrap;
-  min-width: 120px; /* ensures buttons don’t shrink too small */
-  transition: all 0.3s ease;
-}
-
 .hero-btn {
+  display: inline-block;
+  padding: 0.75rem 2rem;
   background: var(--accent-color);
   color: var(--white);
+  font-weight: 600;
+  border-radius: 50px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  white-space: nowrap;
 }
 
 .hero-btn:hover {
@@ -92,6 +77,7 @@
   background: var(--white);
   color: var(--accent-color);
   border: 2px solid var(--accent-color);
+  white-space: nowrap;
 }
 
 .secondary-btn:hover {
@@ -106,12 +92,11 @@
   justify-content: center;
   gap: 2rem;
   margin-top: 2rem;
-  width: 100%;
 }
 
 .stat-item {
   text-align: center;
-  flex: 1 1 120px;
+  flex: 1 1 150px;
 }
 
 .stat-item h2 {
@@ -127,46 +112,49 @@
 }
 
 /* ===== RESPONSIVE ===== */
+@media (max-width: 1024px) {
+  .hero-stats {
+    gap: 1.5rem;
+  }
+}
+
 @media (max-width: 768px) {
   .hero-section {
-    padding: 2rem 1rem;
-    min-height: 70vh;
+    padding: calc(var(--nav-height) + 25px) 1rem 2rem 1rem;
+    min-height: calc(70vh);
   }
 
   .hero-title {
-    font-size: clamp(1.8rem, 6vw, 2.2rem);
-    line-height: 1.3;
+    font-size: clamp(1.8rem, 6vw, 2.5rem);
   }
 
   .hero-subtitle {
-    font-size: clamp(0.95rem, 3vw, 1.15rem);
-    max-width: 90%; /* ensure text fits on small screens */
+    font-size: clamp(0.95rem, 2.5vw, 1.15rem);
   }
 
   .hero-buttons {
-    flex-direction: column; /* stack buttons vertically */
-    max-width: 250px;       /* container limit on small screens */
-    width: 100%;
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: center;
   }
 
-  .hero-btn,
-  .secondary-btn {
-    width: 100%;   /* full width for mobile */
-    flex: none;    /* disable flex shrinking */
+  .hero-btn {
+    padding: 0.6rem 1.5rem;
+    font-size: 0.95rem;
   }
 
   .stat-item h2 {
-    font-size: clamp(1.3rem, 4vw, 1.6rem);
+    font-size: clamp(1.3rem, 4vw, 1.8rem);
   }
 
   .stat-item p {
-    font-size: clamp(0.8rem, 2.5vw, 0.95rem);
+    font-size: clamp(0.8rem, 2vw, 0.95rem);
   }
 }
 
 @media (max-width: 480px) {
   .hero-section {
-    padding: 1.5rem 1rem;
+    padding: calc(var(--nav-height) + 25px) 1rem 1.5rem 1rem;
   }
 
   .hero-title {
@@ -181,9 +169,8 @@
     gap: 0.5rem;
   }
 
-  .hero-btn,
-  .secondary-btn {
-    padding: 0.6rem 1.2rem;
+  .hero-btn {
+    padding: 0.5rem 1.2rem;
     font-size: 0.9rem;
   }
 
@@ -192,6 +179,6 @@
   }
 
   .stat-item p {
-    font-size: clamp(0.75rem, 2.5vw, 0.9rem);
+    font-size: clamp(0.75rem, 2vw, 0.9rem);
   }
 }
