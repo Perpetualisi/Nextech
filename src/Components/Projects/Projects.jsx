@@ -8,7 +8,7 @@ const projects = [
     title: "Conotex Integrated Services – IT & Low-Voltage Solutions",
     description:
       "Conotex Integrated Services (CIS), a division of Conotex Systems & Energy Services LLC, is a trusted nationwide provider of low-voltage and managed IT solutions. Since 2011, we have partnered with leading brands across industries to design, deploy, and manage critical infrastructure with precision and reliability.",
-    images: ["/conotex1.png", "/conotex2.webp", "/conotex3.jpg"],
+    images: ["/conotex2.webp", "/conotex3.jpg", "/conotex1.png"],
     link: "https://www.conotextech.com/",
   },
   {
@@ -22,7 +22,7 @@ const projects = [
     title: "WearEiko – African-Inspired Fashion",
     description:
       "WearEiko is a fashion movement that blends African heritage with bold, modern design, empowering self-expression through style. From vibrant Ankara prints to chic neutrals and special-occasion looks, our pieces are curated to reflect your unique personality. Every garment is crafted with care and meaning for dreamers, professionals, and creatives who dress with purpose. Locally inspired, globally admired, our fashion transitions seamlessly from work to celebration, without compromising identity. Rooted in sustainability, inclusion, and innovation, WearEiko supports communities and tells stories through every stitch. Welcome to WearEiko — where fashion is culture, and every look makes a statement.",
-    images: ["/wear1.jpg", "/wear2.jpg", "/wear3.jpg"],
+    images: ["/wear2.jpg", "/wear1.jpg", "/wear3.jpg"],
     link: "https://weareiko.com",
   },
 ];

@@ -5,25 +5,28 @@ import "./Blog.css";
 
 const blogPosts = [
   {
-    title: "The Future of Web Development in 2025",
-    excerpt: "Explore the trends that are shaping the web from AI to serverless tech and immersive UI.",
-    fullText: " AI-powered tools, serverless infrastructure, and immersive interfaces are redefining how developers build and users experience the web.",
+    title: "Top Web Development Trends for 2026",
+    excerpt: "AI-driven automation, no-code tools, and WebAssembly are reshaping how developers build the web.",
+    fullText:
+      " As we enter 2026, web development continues to evolve rapidly. From AI-assisted coding and automation tools to performance-focused frameworks like Remix and Astro, the next year will demand smarter, faster, and more accessible digital experiences.",
     icon: "🚀",
-    date: "May 2025",
+    date: "October 2025",
   },
   {
-    title: "Designing Experiences, Not Just Websites",
-    excerpt: "Great digital products tell stories. Here's how we create immersive, user-centric designs.",
-    fullText: " We focus on empathy-driven design, ensuring each project is tailored to meet user needs while being beautiful and functional.",
+    title: "Building Human-Centered Digital Products",
+    excerpt: "Good design starts with empathy — discover how emotion and usability shape modern interfaces.",
+    fullText:
+      " Beyond aesthetics, modern design emphasizes clarity, accessibility, and user emotion. We craft every interface to connect with real users — blending beauty with purpose for impactful experiences.",
     icon: "🎨",
-    date: "April 2025",
+    date: "September 2025",
   },
   {
-    title: "How to Launch a Scalable SaaS in 6 Steps",
-    excerpt: "Learn our battle-tested process for launching high-performance SaaS products.",
-    fullText: " From market research to DevOps automation, these six steps will ensure your SaaS product is robust, scalable, and ready for growth.",
-    icon: "📊",
-    date: "March 2025",
+    title: "The Rise of Micro-SaaS Startups",
+    excerpt: "Learn why small, focused SaaS products are outperforming big tech in innovation and speed.",
+    fullText:
+      " Micro-SaaS empowers small teams to solve niche problems profitably. With tools like Supabase, Next.js, and Stripe, launching a lightweight but scalable product has never been easier.",
+    icon: "💡",
+    date: "August 2025",
   },
 ];
 
@@ -44,20 +47,25 @@ const Blog = () => {
     <section id="blog" className="blog-section">
       <div className="blog-marquee">
         <p>
-          🔥 Welcome to our Blog — Get the latest insights on Web Development, Design & Tech Trends! 🔥
+          🔥 Latest Insights — Web Development | Design | SaaS | AI Trends (October 2025) 🔥
         </p>
       </div>
 
       <div className="blog-header" data-aos="fade-up">
         <h2>Insights & Resources</h2>
         <p>
-          Stay ahead with our latest thoughts on design, development, and digital transformation.
+          Stay ahead with our newest thoughts on development, design, and the future of digital innovation.
         </p>
       </div>
 
       <div className="blog-grid">
         {blogPosts.map((post, index) => (
-          <div className="blog-card" key={index} data-aos="fade-up" data-aos-delay={index * 100}>
+          <div
+            className="blog-card"
+            key={index}
+            data-aos="fade-up"
+            data-aos-delay={index * 100}
+          >
             <div className="blog-icon" aria-label={post.title}>
               {post.icon}
             </div>
@@ -68,7 +76,10 @@ const Blog = () => {
                 {post.excerpt}
                 {expanded[index] && <span>{post.fullText}</span>}
               </p>
-              <button className="read-more" onClick={() => toggleReadMore(index)}>
+              <button
+                className="read-more"
+                onClick={() => toggleReadMore(index)}
+              >
                 {expanded[index] ? "Read Less ↑" : "Read More →"}
               </button>
             </div>

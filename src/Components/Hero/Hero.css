@@ -132,16 +132,21 @@
     font-size: clamp(0.95rem, 2.5vw, 1.15rem);
   }
 
-  .hero-buttons {
-    flex-direction: column;
-    gap: 0.75rem;
-    align-items: center;
-  }
+.hero-buttons {
+  flex-direction: row;      
+  justify-content: center; 
+  gap:1rem;
+  width: 100%;             
+  max-width: 300px;        
+  margin: 0 auto 2rem auto; 
+}
 
-  .hero-btn {
-    padding: 0.6rem 1.5rem;
-    font-size: 0.95rem;
-  }
+.hero-btn {
+  flex: 1;                 
+  text-align: center;
+  padding: 0.6rem 1rem;    
+  font-size: 0.9rem;
+}
 
   .stat-item h2 {
     font-size: clamp(1.3rem, 4vw, 1.8rem);
