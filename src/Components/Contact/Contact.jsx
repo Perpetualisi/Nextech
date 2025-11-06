@@ -74,7 +74,7 @@ const Contact = () => {
           <h3>Contact Details</h3>
           <p><strong>Email:</strong> <a href="mailto:Isitech1111@gmail.com">Isitech1111@gmail.com</a></p>
           <p><strong>Phone:</strong> <a href="tel:+2348103558837">+234 810 355 8837</a></p>
-          <p><strong>Location:</strong> Lagos, Nigeria</p>
+          <p><strong>Location:</strong> Nigeria</p>
 
           <div className="social-icons" data-aos="fade-right" data-aos-delay="600">
             <a href="https://github.com/Perpetualisi" target="_blank" rel="noreferrer">GitHub</a>

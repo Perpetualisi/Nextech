@@ -79,7 +79,7 @@ const Footer = () => {
           <h3>Contact</h3>
           <p>Email: Isitech1111@gmail.com</p>
           <p>Phone: +234 810 355 8837</p>
-          <p>Location: Lagos, Nigeria</p>
+          <p>Location: Nigeria</p>
         </motion.div>
       </div>
 
