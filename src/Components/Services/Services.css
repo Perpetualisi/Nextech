@@ -1,6 +1,10 @@
+/* =======================
+   Services Section
+======================= */
 .services-section {
-  padding: 60px 15px;
-  background-color: #f5f5f5;
+  padding: 50px 20px;
+  background-color: #fff;
+  color: #000;
 }
 
 .services-header {
@@ -22,6 +26,9 @@
   line-height: 1.5;
 }
 
+/* =======================
+   Services Grid & Cards
+======================= */
 .services-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -29,129 +36,106 @@
 }
 
 .service-card {
-  background: #fff;
+  background-color: #f9f9f9;
   border-radius: 15px;
-  padding: 20px;
+  padding: 25px;
   text-align: center;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.07);
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .service-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-10px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
 }
 
 .service-icon {
-  font-size: 2.5rem;
+  font-size: 40px;
   margin-bottom: 15px;
+  display: inline-block;
 }
 
-/* Animations */
-@keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
-}
-.bounce {
-  animation: bounce 2s infinite;
-}
+/* Optional: unique icon colors for each service */
+.service-card:nth-child(1) .service-icon { color: #4caf50; } /* Web Design */
+.service-card:nth-child(2) .service-icon { color: #2196f3; } /* Custom Development */
+.service-card:nth-child(3) .service-icon { color: #ff9800; } /* Brand Identity */
+.service-card:nth-child(4) .service-icon { color: #9c27b0; } /* SEO & Analytics */
+.service-card:nth-child(5) .service-icon { color: #e91e63; } /* E-Commerce */
+.service-card:nth-child(6) .service-icon { color: #00bcd4; } /* Tech Consultation */
+.service-card:nth-child(7) .service-icon { color: #ff5722; } /* Mobile App */
+.service-card:nth-child(8) .service-icon { color: #795548; } /* Cloud Integration */
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-.spin {
-  animation: spin 4s linear infinite;
-}
+/* =======================
+   Animations
+======================= */
+.bounce { animation: bounce 2s ease-in-out infinite; }
+.spin { animation: spin 4s linear infinite; }
+.pulse { animation: pulse 2s infinite; }
+.float { animation: float 3s ease-in-out infinite; }
+.zoom { animation: zoom 2.5s ease-in-out infinite; }
+.shake { animation: shake 1.8s infinite; }
+.wave { animation: wave 2.5s ease-in-out infinite; }
+.rotate { animation: rotate 6s linear infinite; }
 
-@keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.2); }
-}
-.pulse {
-  animation: pulse 2s infinite;
-}
+/* Keyframes */
+@keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+@keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+@keyframes zoom { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+@keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+@keyframes wave { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(10deg); } }
+@keyframes rotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
-}
-.float {
-  animation: float 3s ease-in-out infinite;
-}
-
-@keyframes zoom {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-}
-.zoom {
-  animation: zoom 2.5s ease-in-out infinite;
-}
-
-@keyframes shake {
-  0%, 100% { transform: rotate(0); }
-  25% { transform: rotate(3deg); }
-  75% { transform: rotate(-3deg); }
-}
-.shake {
-  animation: shake 1.8s infinite;
-}
-
-@keyframes wave {
-  0%, 100% { transform: rotate(0deg); }
-  25% { transform: rotate(10deg); }
-  50% { transform: rotate(-10deg); }
-  75% { transform: rotate(10deg); }
-}
-.wave {
-  animation: wave 2.5s ease-in-out infinite;
-}
-
-@keyframes rotate {
-  0% { transform: rotateY(0deg); }
-  100% { transform: rotateY(360deg); }
-}
-.rotate {
-  animation: rotate 6s linear infinite;
-}
-
-
+/* =======================
+   Responsive
+======================= */
 @media (max-width: 768px) {
   .services-section {
-    padding: 50px 10px;
+    padding: 50px 15px;
   }
-
-  .services-header h2 {
-    font-size: 1.8rem;
-  }
-
-  .services-header p {
-    font-size: 0.95rem;
-    padding: 0 10px;
-  }
-
-  .service-card {
-    padding: 18px;
-  }
-
-  .service-icon {
-    font-size: 2.2rem;
-  }
+  .services-header h2 { font-size: 1.8rem; }
+  .services-header p { font-size: 0.95rem; padding: 0 10px; }
+  .service-card { padding: 20px; }
+  .service-icon { font-size: 35px; }
 }
 
 @media (max-width: 480px) {
-  .services-header h2 {
-    font-size: 1.5rem;
-  }
+  .services-header h2 { font-size: 1.5rem; }
+  .services-header p { font-size: 0.9rem; }
+  .service-card { padding: 15px; }
+  .service-icon { font-size: 30px; }
+}
+/* Hover effect on icons */
+.service-card:hover .service-icon {
+  transform: scale(1.15);       /* slight grow */
+  filter: brightness(1.2);      /* brighten icon */
+  transition: all 0.3s ease;
+}
 
-  .services-header p {
-    font-size: 0.9rem;
-  }
+/* Optional background circle for icons */
+.service-icon {
+  font-size: 40px;
+  margin-bottom: 15px;
+  display: inline-block;
+  padding: 15px;
+  border-radius: 50%;
+  background-color: rgba(0,0,0,0.05);
+}
 
-  .service-card {
-    padding: 15px;
-  }
+.service-card:hover .service-icon {
+  background-color: rgba(0,0,0,0.1);
+}
+/* Add a subtle pulse animation to the icon background on hover */
+@keyframes pulse-bg {
+  0% { transform: scale(1); opacity: 0.7; }
+  50% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.7; }
+}
 
-  .service-icon {
-    font-size: 2rem;
-  }
+.service-card:hover .service-icon {
+  transform: scale(1.15);       /* icon grows slightly */
+  filter: brightness(1.2);      /* icon brightens */
+  animation: pulse-bg 0.6s ease-in-out;  /* pulse the background */
+  transition: all 0.3s ease;
 }
