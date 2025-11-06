@@ -35,7 +35,7 @@ const Footer = () => {
           animate={{ opacity: 1 }}
           transition={{ duration: 1.5, repeat: Infinity, repeatType: "mirror" }}
         >
-          <h2>NexTech Innovations</h2>
+          <h2>IsiTech Innovations</h2>
           <AnimatePresence mode="wait">
             <motion.p
               key={messages[currentMsgIndex]}
@@ -77,7 +77,7 @@ const Footer = () => {
           transition={{ delay: 0.8, duration: 1 }}
         >
           <h3>Contact</h3>
-          <p>Email: perpetualokan0@gmail.com</p>
+          <p>Email: Isitech1111@gmail.com</p>
           <p>Phone: +234 810 355 8837</p>
           <p>Location: Lagos, Nigeria</p>
         </motion.div>
@@ -89,7 +89,7 @@ const Footer = () => {
         animate={{ opacity: 1 }}
         transition={{ delay: 1.2, duration: 1 }}
       >
-        <p>&copy; {year} NexTech Innovations. All Rights Reserved.</p>
+        <p>&copy; {year} IsiTech Innovations. All Rights Reserved.</p>
       </motion.div>
     </motion.footer>
   );

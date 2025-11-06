@@ -72,7 +72,7 @@ const Contact = () => {
 
         <div className="contact-info" data-aos="fade-left" data-aos-delay="500">
           <h3>Contact Details</h3>
-          <p><strong>Email:</strong> <a href="mailto:perpetualokan0@gmail.com">perpetualokan0@gmail.com</a></p>
+          <p><strong>Email:</strong> <a href="mailto:Isitech1111@gmail.com">Isitech1111@gmail.com</a></p>
           <p><strong>Phone:</strong> <a href="tel:+2348103558837">+234 810 355 8837</a></p>
           <p><strong>Location:</strong> Lagos, Nigeria</p>
 

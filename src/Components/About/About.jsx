@@ -15,10 +15,10 @@ const About = () => {
           <img src="/About.jpg" alt="NexTech Team" />
         </div>
         <div className="about-content" data-aos="fade-left">
-          <h2 className="typing-text-loop">About NexTech Innovations</h2>
+          <h2 className="typing-text-loop">About IsiTech Innovations</h2>
 
           <p>
-            At NexTech Innovations, we don't just build websites — we craft digital experiences
+            At IsiTech Innovations, we don't just build websites — we craft digital experiences
             that captivate, convert, and grow brands.
           </p>
           <p>

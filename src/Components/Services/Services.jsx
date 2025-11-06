@@ -64,7 +64,7 @@ const Services = () => {
       <div className="services-header" data-aos="fade-up">
         <h2>Our Premium Services</h2>
         <p>
-          NexTech Innovations offers industry-leading solutions to launch, grow, and scale your digital brand.
+          IsiTech Innovations offers industry-leading solutions to launch, grow, and scale your digital brand.
         </p>
       </div>
 

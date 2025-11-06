@@ -13,7 +13,7 @@ const Hero = () => {
     <section id="home" className="hero-section">
       <div className="hero-content">
         <h1 className="hero-title">
-          Welcome to <span>NexTech Innovations</span>
+          Welcome to <span>IsiTech Innovations</span>
         </h1>
         <p className="hero-subtitle">
           Crafting innovative digital experiences with creativity, precision, and bold design. 

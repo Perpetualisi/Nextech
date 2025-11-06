@@ -35,7 +35,7 @@ const Navbar = () => {
       <header className={`navbar ${scrolled ? "scrolled" : ""}`} data-aos="fade-down">
         <div className="navbar-container">
           <div className="logo">
-            NexTech <span className="desktop-only">Innovations</span>
+            IsiTech <span className="desktop-only">Innovations</span>
           </div>
 
           <nav className={`nav-links ${menuOpen ? "open" : ""}`}>
