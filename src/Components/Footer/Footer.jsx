@@ -17,7 +17,7 @@ const Footer = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentMsgIndex((prev) => (prev + 1) % messages.length);
-    }, 3000); // every 3 seconds
+    }, 3000);
     return () => clearInterval(interval);
   }, []);
 
@@ -31,17 +31,24 @@ const Footer = () => {
       <div className="footer-container">
         <motion.div
           className="footer-brand"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1.5, repeat: Infinity, repeatType: "mirror" }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1.2, ease: "easeOut", repeat: Infinity, repeatType: "mirror" }}
         >
-          <h2>IsiTech Innovations</h2>
+          <motion.h2
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0, 1, 0.8, 1], y: [0, -5, 0] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          >
+            IsiTech Innovations
+          </motion.h2>
+
           <AnimatePresence mode="wait">
             <motion.p
               key={messages[currentMsgIndex]}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -5 }}
               transition={{ duration: 0.6 }}
             >
               {messages[currentMsgIndex]}

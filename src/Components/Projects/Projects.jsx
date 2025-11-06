@@ -14,7 +14,7 @@ const projects = [
   {
     title: "Vendo – eCommerce Website",
     description:
-      "A stylish frontend store with product grid, categories, and promo banners.",
+      "Vendo is a stylish and modern frontend eCommerce store designed for a seamless shopping experience. It features a dynamic product grid, category-based browsing, attention-grabbing promotional banners, interactive product pages, search functionality, smooth animations, and intuitive navigation. Fully responsive on mobile and desktop, it optimizes performance, engagement, and conversions while maintaining clean, maintainable code.",
     images: ["/vendo1.jpg", "/vendo2.jpg", "/vendo3.jpg"],
     link: "https://my-ecommerce-nine-iota.vercel.app/",
   },
@@ -33,9 +33,7 @@ const Projects = () => {
   }, []);
 
   // Track active image per project
-  const [activeImages, setActiveImages] = useState(
-    projects.map(() => 0) // initially first image for each project
-  );
+  const [activeImages, setActiveImages] = useState(projects.map(() => 0));
 
   const nextImage = (projectIndex) => {
     setActiveImages((prev) =>
@@ -51,8 +49,7 @@ const Projects = () => {
     setActiveImages((prev) =>
       prev.map((imgIndex, i) =>
         i === projectIndex
-          ? (imgIndex - 1 + projects[i].images.length) %
-            projects[i].images.length
+          ? (imgIndex - 1 + projects[i].images.length) % projects[i].images.length
           : imgIndex
       )
     );
@@ -62,10 +59,7 @@ const Projects = () => {
     <section id="projects" className="projects-section">
       <div className="projects-header" data-aos="fade-up">
         <h2>Featured Projects</h2>
-        <p>
-          We build cutting-edge digital experiences that deliver real business
-          results.
-        </p>
+        <p>We build cutting-edge digital experiences that deliver real business results.</p>
       </div>
 
       <div className="projects-grid">
@@ -79,26 +73,34 @@ const Projects = () => {
             <div className="project-image-slider">
               <img
                 src={project.images[activeImages[index]]}
-                alt={`${project.title} ${
-                  activeImages[index] + 1
-                }`}
+                alt={`${project.title} ${activeImages[index] + 1}`}
               />
-              <button
-                className="slider-btn prev"
-                onClick={() => prevImage(index)}
-              >
+              <button className="slider-btn prev" onClick={() => prevImage(index)}>
                 ‹
               </button>
-              <button
-                className="slider-btn next"
-                onClick={() => nextImage(index)}
-              >
+              <button className="slider-btn next" onClick={() => nextImage(index)}>
                 ›
               </button>
             </div>
+
             <div className="project-content">
               <h3>{project.title}</h3>
               <p>{project.description}</p>
+
+              {project.techStack && (
+                <p>
+                  <strong>Tech Stack:</strong> {project.techStack.join(", ")}
+                </p>
+              )}
+
+              {project.highlights && (
+                <ul>
+                  {project.highlights.map((highlight, i) => (
+                    <li key={i}>{highlight}</li>
+                  ))}
+                </ul>
+              )}
+
               <a href={project.link} target="_blank" rel="noopener noreferrer">
                 View Project →
               </a>
