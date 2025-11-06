@@ -78,7 +78,7 @@ const Contact = () => {
 
           <div className="social-icons" data-aos="fade-right" data-aos-delay="600">
             <a href="https://github.com/Perpetualisi" target="_blank" rel="noreferrer">GitHub</a>
-            <a href="mailto:perpetualokan0@gmail.com">Email</a>
+            <a href="mailto:isitech1111@gmail.com">Email</a>
             <a href="https://www.linkedin.com/in/perpetual-okan-759655344/" target="_blank" rel="noreferrer">LinkedIn</a>
             <a href="https://wa.me/2348103558837" target="_blank" rel="noreferrer">WhatsApp</a>
           </div>
