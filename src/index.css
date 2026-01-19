@@ -21,3 +21,12 @@ html, body {
   display: block;
   transition: all 0.3s ease;
 }
+section {
+  scroll-margin-top: 70px; /* mobile header */
+}
+
+@media (min-width: 768px) {
+  section {
+    scroll-margin-top: 90px; /* desktop header */
+  }
+}
