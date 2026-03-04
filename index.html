@@ -1,40 +1,731 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
   <head>
     <meta charset="UTF-8" />
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <!-- ══════════════════════════════════════════════════
+         PRIMARY META
+    ══════════════════════════════════════════════════ -->
+    <meta name="viewport"    content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="IsiTech Innovations delivers cutting-edge software engineering, AI platforms, and cloud infrastructure for organisations that refuse to stand still." />
+    <meta name="author"      content="IsiTech Innovations" />
+    <meta name="theme-color" content="#050714" />
+    <meta name="color-scheme" content="dark" />
+    <title>IsiTech Innovations — Engineering Tomorrow</title>
 
-    <!-- Responsive viewport -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- ── Open Graph ─────────────────────────────────── -->
+    <meta property="og:type"        content="website" />
+    <meta property="og:site_name"   content="IsiTech Innovations" />
+    <meta property="og:title"       content="IsiTech Innovations — Engineering Tomorrow" />
+    <meta property="og:description" content="Full-stack software, AI, and cloud architecture for organisations ready to move at the speed of thought." />
+    <meta property="og:image"       content="/og-image.png" />
+    <meta property="og:url"         content="https://isitech.io" />
 
-    <!-- Page title -->
-    <title>IsiTech Innovations</title>
+    <!-- ── Twitter / X Card ──────────────────────────── -->
+    <meta name="twitter:card"        content="summary_large_image" />
+    <meta name="twitter:site"        content="@isitechhq" />
+    <meta name="twitter:title"       content="IsiTech Innovations" />
+    <meta name="twitter:description" content="Software engineering, AI & cloud infrastructure." />
+    <meta name="twitter:image"       content="/og-image.png" />
 
-    <!-- Tailwind CSS CDN -->
+    <!-- ── Icons & PWA ───────────────────────────────── -->
+    <link rel="icon"             type="image/svg+xml" href="/vite.svg" />
+    <link rel="apple-touch-icon"                      href="/apple-touch-icon.png" />
+    <link rel="manifest"                              href="/site.webmanifest" />
+
+    <!-- ══════════════════════════════════════════════════
+         FONTS  (matches global stylesheet v2.0 exactly)
+    ══════════════════════════════════════════════════ -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!--
+      Syne 700/800/900 → display / headings
+      DM Sans 300–700  → body copy
+    -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300;1,9..40,400&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- ══════════════════════════════════════════════════
+         TAILWIND CSS CDN
+    ══════════════════════════════════════════════════ -->
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Optional: Tailwind custom config -->
     <script>
       tailwind.config = {
+        darkMode: "class",
         theme: {
           extend: {
+            /* ── Brand colours ── */
             colors: {
-              primary: "#0a192f",
-              accent: "#16bed4",
-              accentDark: "#005f7f",
+              primary:    "#050714",
+              accent:     "#6366f1",
+              accentDark: "#4f46e5",
+
+              /* Full palette from design tokens */
+              indigo:  "#6366f1",
+              violet:  "#818cf8",
+              purple:  "#a855f7",
+              lilac:   "#c084fc",
+              cyan:    "#67e8f9",
+              pink:    "#f472b6",
+              green:   "#34d399",
+              amber:   "#fbbf24",
+
+              /* Surface scale */
+              "bg-void":     "#03040f",
+              "bg-base":     "#050714",
+              "bg-surface":  "#080c1e",
+              "bg-elevated": "#0d0620",
+              "bg-overlay":  "#060b1a",
+            },
+
+            /* ── Fonts ── */
+            fontFamily: {
+              display: ["Syne",    "sans-serif"],
+              body:    ["DM Sans", "sans-serif"],
+            },
+
+            /* ── Animations ── */
+            animation: {
+              "fade-up":       "fadeUp .7s cubic-bezier(0.23,1,0.32,1) both",
+              "fade-in":       "fadeIn .6s ease both",
+              "float":         "float 14s ease-in-out infinite",
+              "float-slow":    "floatSlow 22s ease-in-out infinite",
+              "gradient-flow": "gradientFlow 5s ease infinite",
+              "shimmer":       "shimmer .7s ease forwards",
+              "spin-slow":     "spin 9s linear infinite",
+              "pulse-dot":     "dotPulse 2.2s ease-in-out infinite",
+              "grid-drift":    "gridDrift 20s linear infinite",
+              "arrow-pulse":   "arrowPulse 2s ease-in-out infinite",
+              "glow-pulse":    "glowPulse 4s ease-in-out infinite",
+            },
+            keyframes: {
+              fadeUp:       { from: { opacity: 0, transform: "translateY(22px)" }, to: { opacity: 1, transform: "none" } },
+              fadeIn:       { from: { opacity: 0 },                               to: { opacity: 1 } },
+              float:        { "0%,100%": { transform: "translateY(0)" },          "50%": { transform: "translateY(-9px)" } },
+              floatSlow:    { "0%,100%": { transform: "translateY(0)" },          "50%": { transform: "translateY(-5px)" } },
+              gradientFlow: { "0%,100%": { backgroundPosition: "0% 50%" },       "50%": { backgroundPosition: "100% 50%" } },
+              shimmer:      { "0%": { transform: "translateX(-120%) skewX(-12deg)" }, "100%": { transform: "translateX(320%) skewX(-12deg)" } },
+              dotPulse:     { "0%,100%": { boxShadow: "0 0 0 0 rgba(52,211,153,.45)" }, "50%": { boxShadow: "0 0 0 6px rgba(52,211,153,0)" } },
+              gridDrift:    { from: { backgroundPosition: "0 0" },               to: { backgroundPosition: "0 58px" } },
+              arrowPulse:   { "0%,100%": { transform: "translateX(0)" },         "50%": { transform: "translateX(5px)" } },
+              glowPulse: {
+                "0%,100%": { boxShadow: "0 0 22px rgba(99,102,241,.15), inset 0 1px 0 rgba(255,255,255,.065)" },
+                "50%":     { boxShadow: "0 0 44px rgba(168,85,247,.38), inset 0 1px 0 rgba(255,255,255,.10)"  },
+              },
+            },
+
+            /* ── Shadows / glow ── */
+            boxShadow: {
+              "card":       "0 4px 40px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.065)",
+              "card-hover": "0 8px 64px rgba(0,0,0,.55), 0 0 0 1px rgba(129,140,248,.10), inset 0 1px 0 rgba(255,255,255,.09)",
+              "glow-indigo":"0 0 24px rgba(99,102,241,.38)",
+              "glow-violet":"0 0 28px rgba(129,140,248,.40)",
+              "glow-purple":"0 0 28px rgba(168,85,247,.38)",
+              "glow-pink":  "0 0 24px rgba(244,114,182,.35)",
+              "glow-cyan":  "0 0 22px rgba(103,232,249,.32)",
+              "glow-green": "0 0 18px rgba(52,211,153,.40)",
+            },
+
+            /* ── Border radius ── */
+            borderRadius: {
+              sm:   "10px",
+              md:   "16px",
+              lg:   "22px",
+              xl:   "28px",
+              pill: "100px",
             },
           },
         },
       };
     </script>
+
+    <!-- ══════════════════════════════════════════════════
+         SHELL-LEVEL CSS
+         Only what must exist before React hydrates:
+         design tokens, body background, orbs, cursor,
+         loader, scroll-reveal hooks, scrollbar, noise.
+         All component styles live in the design system
+         stylesheet (global.css / index.css).
+    ══════════════════════════════════════════════════ -->
+    <style>
+      /* ── Design tokens (mirror global stylesheet v2.0) ── */
+      :root {
+        --bg-void:         #03040f;
+        --bg-base:         #050714;
+        --bg-surface:      #080c1e;
+        --bg-elevated:     #0d0620;
+        --bg-overlay:      #060b1a;
+        --bg-glass:        rgba(255,255,255,0.045);
+        --bg-glass-hover:  rgba(255,255,255,0.075);
+
+        --c-indigo:        #6366f1;
+        --c-violet:        #818cf8;
+        --c-purple:        #a855f7;
+        --c-lilac:         #c084fc;
+        --c-cyan:          #67e8f9;
+        --c-pink:          #f472b6;
+        --c-green:         #34d399;
+        --c-amber:         #fbbf24;
+
+        --t-primary:       #e0e7ff;
+        --t-secondary:     rgba(199,210,254,0.72);
+        --t-muted:         rgba(165,180,252,0.52);
+        --t-faint:         rgba(165,180,252,0.32);
+
+        --border:          1px solid rgba(255,255,255,0.075);
+        --border-accent:   1px solid rgba(129,140,248,0.28);
+        --border-glow:     1px solid rgba(129,140,248,0.55);
+
+        --font-display:    'Syne',    sans-serif;
+        --font-body:       'DM Sans', sans-serif;
+
+        --ease-spring:     cubic-bezier(0.23, 1,    0.32, 1);
+        --ease-smooth:     cubic-bezier(0.4,  0,    0.2,  1);
+        --ease-bounce:     cubic-bezier(0.34, 1.56, 0.64, 1);
+        --ease-sharp:      cubic-bezier(0.16, 1,    0.3,  1);
+
+        --max-w:           1320px;
+        --pad-x:           clamp(16px, 4.5vw, 72px);
+        --pad-y:           clamp(64px, 9vw, 120px);
+        --radius-sm:       10px;
+        --radius-md:       16px;
+        --radius-lg:       22px;
+        --radius-xl:       28px;
+        --radius-pill:     100px;
+      }
+
+      /* ── Reset ─────────────────────────────────────── */
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      html {
+        font-size: 16px;
+        scroll-behavior: smooth;
+        -webkit-text-size-adjust: 100%;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizeLegibility;
+      }
+
+      /* ── Body — continuous deep-space background ─── */
+      body {
+        font-family: var(--font-body);
+        font-weight: 400;
+        color: var(--t-primary);
+        background-color: var(--bg-base);
+        background-image:
+          radial-gradient(ellipse 70% 45% at  8%  2%,  rgba(99,102,241,.10) 0%, transparent 65%),
+          radial-gradient(ellipse 65% 40% at 92% 98%,  rgba(168,85,247,.09) 0%, transparent 65%),
+          radial-gradient(ellipse 50% 35% at 50% 55%,  rgba(103,232,249,.05) 0%, transparent 70%),
+          radial-gradient(ellipse 40% 25% at 80% 35%,  rgba(244,114,182,.05) 0%, transparent 65%),
+          linear-gradient(160deg, #050714 0%, #080c1e 22%, #0d0620 50%, #060b1a 75%, #080d1e 100%);
+        background-attachment: fixed;
+        min-height: 100vh;
+        width: 100%;
+        overflow-x: hidden;
+        line-height: 1.65;
+      }
+
+      /* Animated grid */
+      body::before {
+        content: '';
+        position: fixed; inset: 0; z-index: 0;
+        pointer-events: none;
+        background-image:
+          linear-gradient(rgba(129,140,248,.030) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(129,140,248,.030) 1px, transparent 1px);
+        background-size: 58px 58px;
+        animation: gridDrift 20s linear infinite;
+      }
+
+      /* Noise grain */
+      body::after {
+        content: '';
+        position: fixed; inset: 0; z-index: 0;
+        pointer-events: none;
+        opacity: 0.020;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.68' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      }
+
+      @keyframes gridDrift { from { background-position: 0 0; } to { background-position: 0 58px; } }
+
+      /* React root sits above background layers */
+      #root { position: relative; z-index: 1; min-height: 100svh; }
+
+      /* ── Scrollbar ──────────────────────────────────── */
+      ::-webkit-scrollbar       { width: 5px; height: 5px; }
+      ::-webkit-scrollbar-track { background: rgba(5,7,20,.95); }
+      ::-webkit-scrollbar-thumb {
+        background: linear-gradient(180deg, var(--c-indigo), var(--c-purple), var(--c-lilac));
+        border-radius: 10px;
+        box-shadow: 0 0 8px rgba(99,102,241,.55);
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(180deg, var(--c-violet), var(--c-lilac), var(--c-pink));
+        box-shadow: 0 0 14px rgba(129,140,248,.70);
+      }
+      * { scrollbar-width: thin; scrollbar-color: var(--c-indigo) rgba(5,7,20,.95); }
+
+      /* ── Text selection ─────────────────────────────── */
+      ::selection      { background: rgba(99,102,241,.38); color: #e0e7ff; }
+      ::-moz-selection { background: rgba(99,102,241,.38); color: #e0e7ff; }
+
+      /* ── Accessibility skip link ────────────────────── */
+      .isi-skip {
+        position: absolute; top: -64px; left: 16px;
+        padding: 9px 18px; border-radius: 9px;
+        background: var(--c-indigo); color: #fff;
+        font-family: var(--font-body); font-size: 14px; font-weight: 700;
+        z-index: 10000; text-decoration: none;
+        transition: top .22s ease;
+      }
+      .isi-skip:focus { top: 14px; }
+
+      /* ── Page loader ────────────────────────────────── */
+      .isi-loader {
+        position: fixed; inset: 0; z-index: 9999;
+        background: var(--bg-base);
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        gap: 20px;
+        pointer-events: none;
+        animation: loadFade .55s ease .3s both;
+      }
+      @keyframes loadFade { from { opacity:1; visibility:visible; } to { opacity:0; visibility:hidden; } }
+
+      .isi-loader-logo {
+        font-family: var(--font-display);
+        font-size: 1.1rem;
+        font-weight: 800;
+        letter-spacing: -.01em;
+        color: var(--t-muted);
+        animation: fadeIn .4s .05s ease both;
+      }
+      @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+      .isi-loader-bar {
+        width: 140px; height: 2px;
+        border-radius: 2px;
+        background: rgba(255,255,255,.08);
+        overflow: hidden; position: relative;
+      }
+      .isi-loader-bar::after {
+        content: '';
+        position: absolute; inset-block: 0; left: 0;
+        width: 60%;
+        background: linear-gradient(90deg, var(--c-indigo), var(--c-lilac), var(--c-pink));
+        border-radius: 2px;
+        animation: shimmer 1.2s ease-in-out infinite;
+      }
+      @keyframes shimmer {
+        0%   { transform: translateX(-120%) skewX(-12deg); }
+        100% { transform: translateX(320%)  skewX(-12deg); }
+      }
+
+      /* ── Ambient orbs ───────────────────────────────── */
+      .isi-orb {
+        position: fixed; border-radius: 50%;
+        pointer-events: none; z-index: 0;
+        filter: blur(88px); will-change: transform;
+      }
+      .isi-orb-1 {
+        width: clamp(200px,32vw,520px); height: clamp(200px,32vw,520px);
+        top: 5%; left: -10%;
+        background: radial-gradient(circle, rgba(99,102,241,.11), transparent 70%);
+        animation: float 14s ease-in-out infinite;
+      }
+      .isi-orb-2 {
+        width: clamp(160px,26vw,420px); height: clamp(160px,26vw,420px);
+        bottom: 15%; right: -8%;
+        background: radial-gradient(circle, rgba(168,85,247,.10), transparent 70%);
+        animation: float 18s ease-in-out infinite reverse;
+      }
+      .isi-orb-3 {
+        width: clamp(120px,18vw,300px); height: clamp(120px,18vw,300px);
+        top: 52%; left: 44%;
+        background: radial-gradient(circle, rgba(103,232,249,.06), transparent 70%);
+        animation: floatSlow 22s ease-in-out infinite;
+      }
+      .isi-orb-4 {
+        width: clamp(100px,14vw,240px); height: clamp(100px,14vw,240px);
+        top: 30%; right: 12%;
+        background: radial-gradient(circle, rgba(244,114,182,.07), transparent 70%);
+        animation: floatSlow 16s ease-in-out infinite reverse;
+      }
+      @keyframes float     { 0%,100%{transform:translateY(0)}  50%{transform:translateY(-9px)} }
+      @keyframes floatSlow { 0%,100%{transform:translateY(0)}  50%{transform:translateY(-5px)} }
+
+      /* ── Custom cursor (desktop only) ───────────────── */
+      /*
+        cursor:none is NOT applied in CSS — it's added by JS via
+        .isi-cursor-ready only after custom cursor is confirmed active.
+        This guarantees users always have a visible cursor.
+      */
+      @media (hover:hover) and (pointer:fine) {
+        body.isi-cursor-ready         { cursor: none; }
+        body.isi-cursor-ready a,
+        body.isi-cursor-ready button,
+        body.isi-cursor-ready [role="button"],
+        body.isi-cursor-ready input,
+        body.isi-cursor-ready textarea,
+        body.isi-cursor-ready select,
+        body.isi-cursor-ready label   { cursor: none; }
+
+        .isi-cursor-dot {
+          position: fixed; top: 0; left: 0;
+          width: 8px; height: 8px;
+          border-radius: 50%;
+          background: var(--c-violet);
+          box-shadow: 0 0 12px var(--c-violet), 0 0 26px rgba(129,140,248,.40);
+          transform: translate(-50%,-50%);
+          pointer-events: none; z-index: 10000;
+          transition: width .18s var(--ease-spring), height .18s var(--ease-spring), background .18s ease;
+          will-change: transform;
+        }
+        .isi-cursor-ring {
+          position: fixed; top: 0; left: 0;
+          width: 38px; height: 38px;
+          border-radius: 50%;
+          border: 1.5px solid rgba(129,140,248,.48);
+          box-shadow: 0 0 0 1px rgba(129,140,248,.10);
+          transform: translate(-50%,-50%);
+          pointer-events: none; z-index: 9999;
+          transition:
+            width .22s var(--ease-spring),
+            height .22s var(--ease-spring),
+            border-color .22s ease,
+            opacity .2s ease;
+          will-change: transform;
+        }
+
+        body.isi-cursor-hover .isi-cursor-dot {
+          width: 14px; height: 14px;
+          background: var(--c-lilac);
+          box-shadow: 0 0 18px var(--c-lilac), 0 0 36px rgba(192,132,252,.50);
+        }
+        body.isi-cursor-hover .isi-cursor-ring {
+          width: 54px; height: 54px;
+          border-color: rgba(192,132,252,.60);
+          opacity: .68;
+        }
+        body.isi-cursor-click .isi-cursor-dot  { transform: translate(-50%,-50%) scale(.70); }
+        body.isi-cursor-click .isi-cursor-ring { transform: translate(-50%,-50%) scale(.80); opacity: .4; }
+      }
+
+      /* ── Scroll reveal ──────────────────────────────── */
+      .isi-reveal       { opacity:0; transform:translateY(22px);  transition: opacity .7s var(--ease-spring), transform .7s var(--ease-spring); }
+      .isi-reveal-left  { opacity:0; transform:translateX(-28px); transition: opacity .7s var(--ease-spring), transform .7s var(--ease-spring); }
+      .isi-reveal-right { opacity:0; transform:translateX(28px);  transition: opacity .7s var(--ease-spring), transform .7s var(--ease-spring); }
+      .isi-reveal-scale { opacity:0; transform:scale(.92);        transition: opacity .6s var(--ease-spring), transform .6s var(--ease-spring); }
+
+      .isi-reveal.is-visible,
+      .isi-reveal-left.is-visible,
+      .isi-reveal-right.is-visible,
+      .isi-reveal-scale.is-visible { opacity:1; transform:none; }
+
+      /* Auto-stagger children */
+      .isi-stagger > *:nth-child(1) { transition-delay: .08s; }
+      .isi-stagger > *:nth-child(2) { transition-delay: .16s; }
+      .isi-stagger > *:nth-child(3) { transition-delay: .24s; }
+      .isi-stagger > *:nth-child(4) { transition-delay: .32s; }
+      .isi-stagger > *:nth-child(5) { transition-delay: .40s; }
+      .isi-stagger > *:nth-child(6) { transition-delay: .48s; }
+      .isi-stagger > *:nth-child(7) { transition-delay: .56s; }
+      .isi-stagger > *:nth-child(8) { transition-delay: .64s; }
+
+      /* ── Toast notifications ────────────────────────── */
+      .isi-toast-root {
+        position: fixed; bottom: 24px; right: 24px;
+        z-index: 9500;
+        display: flex; flex-direction: column; gap: 10px;
+        pointer-events: none;
+      }
+      .isi-toast {
+        display: flex; align-items: center; gap: 11px;
+        padding: 12px 18px; border-radius: 15px;
+        background: linear-gradient(135deg, rgba(8,8,30,.96), rgba(18,8,44,.92));
+        border: 1px solid rgba(129,140,248,.32);
+        backdrop-filter: blur(22px);
+        box-shadow: 0 8px 44px rgba(0,0,0,.62), inset 0 1px 0 rgba(255,255,255,.07);
+        color: var(--t-primary);
+        font-family: var(--font-body); font-size: 13px; font-weight: 600;
+        min-width: 220px; max-width: 340px;
+        pointer-events: all;
+        animation: toastIn .4s var(--ease-bounce) both;
+      }
+      @keyframes toastIn { from { opacity:0; transform:translateY(12px) scale(.96); } to { opacity:1; transform:none; } }
+      .isi-toast-icon { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+
+      /* ── Reading progress bar ───────────────────────── */
+      .isi-progress-bar {
+        position: fixed; top:0; left:0; z-index: 9998;
+        height: 2px; width: 0%;
+        background: linear-gradient(90deg, var(--c-indigo), var(--c-lilac), var(--c-pink));
+        box-shadow: 0 0 12px rgba(99,102,241,.60);
+        pointer-events: none;
+        transition: width .08s linear;
+      }
+
+      /* ── Focus visible ──────────────────────────────── */
+      :focus-visible {
+        outline: 2px solid var(--c-violet);
+        outline-offset: 3px;
+        border-radius: 6px;
+      }
+
+      /* ── Reduced motion ─────────────────────────────── */
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          animation-duration: .01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: .01ms !important;
+        }
+        html { scroll-behavior: auto; }
+        body::before { animation: none; }
+        .isi-reveal,
+        .isi-reveal-left,
+        .isi-reveal-right,
+        .isi-reveal-scale { opacity:1 !important; transform:none !important; }
+      }
+
+      /* ── Print ──────────────────────────────────────── */
+      @media print {
+        body { background:#fff; color:#000; }
+        body::before, body::after,
+        .isi-orb, .isi-cursor-dot, .isi-cursor-ring,
+        .isi-loader, .isi-progress-bar { display:none !important; }
+      }
+    </style>
   </head>
 
-  <body class="bg-white text-black antialiased">
+  <body>
+
+    <!-- ════════════════════════════════════════════════
+         SHELL CHROME  —  rendered before React hydrates
+    ════════════════════════════════════════════════ -->
+
+    <!-- Skip to main content -->
+    <a href="#main" class="isi-skip">Skip to content</a>
+
+    <!-- Reading progress indicator -->
+    <div class="isi-progress-bar" id="isi-progress" aria-hidden="true"></div>
+
+    <!-- Page loader -->
+    <div class="isi-loader" aria-hidden="true">
+      <div class="isi-loader-logo">IsiTech Innovations</div>
+      <div class="isi-loader-bar"></div>
+    </div>
+
+    <!-- Fixed ambient orbs behind everything -->
+    <div class="isi-orb isi-orb-1" aria-hidden="true"></div>
+    <div class="isi-orb isi-orb-2" aria-hidden="true"></div>
+    <div class="isi-orb isi-orb-3" aria-hidden="true"></div>
+    <div class="isi-orb isi-orb-4" aria-hidden="true"></div>
+
+    <!-- Custom cursor elements -->
+    <div class="isi-cursor-dot"  aria-hidden="true"></div>
+    <div class="isi-cursor-ring" aria-hidden="true"></div>
+
+    <!-- ════════════════════════════════════════════════
+         REACT APP ROOT
+    ════════════════════════════════════════════════ -->
     <div id="root"></div>
 
-    <!-- Vite entry -->
+    <!-- Toast container -->
+    <div class="isi-toast-root" aria-live="polite" aria-atomic="true" id="isi-toasts"></div>
+
+    <!-- Vite entry point -->
     <script type="module" src="/src/main.jsx"></script>
+
+
+    <!-- ════════════════════════════════════════════════
+         SHELL SCRIPTS  —  lightweight, no dependencies
+         These run immediately and stay active after React
+         mounts (MutationObserver bridges the gap).
+    ════════════════════════════════════════════════ -->
+
+    <!--
+      1. CUSTOM CURSOR
+         Smooth lagged ring + instant dot
+    -->
+    <script>
+    (() => {
+      if (!window.matchMedia('(hover:hover) and (pointer:fine)').matches) return;
+      const dot  = document.querySelector('.isi-cursor-dot');
+      const ring = document.querySelector('.isi-cursor-ring');
+      if (!dot || !ring) return;
+
+      // Hide native cursor only now that custom cursor is confirmed ready
+      document.body.classList.add('isi-cursor-ready');
+
+      let rx = 0, ry = 0, tx = 0, ty = 0;
+
+      document.addEventListener('mousemove', e => {
+        tx = e.clientX; ty = e.clientY;
+        dot.style.cssText = `left:${tx}px;top:${ty}px`;
+      });
+
+      (function loop() {
+        rx += (tx - rx) * .13;
+        ry += (ty - ry) * .13;
+        ring.style.cssText = `left:${rx}px;top:${ry}px`;
+        requestAnimationFrame(loop);
+      })();
+
+      const HOVER = 'a,button,[role="button"],input,textarea,select,label,[tabindex]';
+      document.addEventListener('mouseover', e => {
+        if (e.target.closest(HOVER)) document.body.classList.add('isi-cursor-hover');
+      });
+      document.addEventListener('mouseout', e => {
+        if (e.target.closest(HOVER)) document.body.classList.remove('isi-cursor-hover');
+      });
+      document.addEventListener('mousedown', () => document.body.classList.add('isi-cursor-click'));
+      document.addEventListener('mouseup',   () => document.body.classList.remove('isi-cursor-click'));
+    })();
+    </script>
+
+    <!--
+      2. SCROLL REVEAL
+         IntersectionObserver + MutationObserver so it
+         auto-picks up elements React dynamically adds.
+    -->
+    <script>
+    (() => {
+      const SELECTOR = '.isi-reveal,.isi-reveal-left,.isi-reveal-right,.isi-reveal-scale';
+
+      const io = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            e.target.classList.add('is-visible');
+            io.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+      const observe = () =>
+        document.querySelectorAll(`${SELECTOR}:not(.is-visible)`).forEach(el => io.observe(el));
+
+      observe(); // existing elements
+
+      // Watch for React-mounted elements
+      new MutationObserver(observe).observe(
+        document.getElementById('root') || document.body,
+        { childList: true, subtree: true }
+      );
+    })();
+    </script>
+
+    <!--
+      3. READING PROGRESS BAR
+         Fills the 2px gradient line at the top of viewport.
+    -->
+    <script>
+    (() => {
+      const bar = document.getElementById('isi-progress');
+      if (!bar) return;
+      window.addEventListener('scroll', () => {
+        const d = document.documentElement;
+        bar.style.width = Math.min((d.scrollTop / (d.scrollHeight - d.clientHeight)) * 100, 100) + '%';
+      }, { passive: true });
+    })();
+    </script>
+
+    <!--
+      4. GLOBAL TOAST API
+         Call from anywhere (React or vanilla):
+           window.isiToast('Saved!', 'success')
+           window.isiToast('Error occurred', 'error')
+           window.isiToast('Heads up', 'info')
+         Optional 3rd arg: duration in ms (default 3500).
+    -->
+    <script>
+    (() => {
+      const COLORS = {
+        success: { dot: '#34d399', border: 'rgba(52,211,153,.40)'  },
+        error:   { dot: '#f472b6', border: 'rgba(244,114,182,.40)' },
+        info:    { dot: '#818cf8', border: 'rgba(129,140,248,.40)' },
+        warn:    { dot: '#fbbf24', border: 'rgba(251,191,36,.40)'  },
+      };
+
+      window.isiToast = (message, type = 'info', duration = 3500) => {
+        const root = document.getElementById('isi-toasts');
+        if (!root) return;
+
+        const c   = COLORS[type] ?? COLORS.info;
+        const el  = document.createElement('div');
+        el.className = 'isi-toast';
+        el.style.borderColor = c.border;
+        el.innerHTML = `
+          <div class="isi-toast-icon" style="background:${c.dot};box-shadow:0 0 8px ${c.dot}"></div>
+          <span>${message}</span>
+        `;
+        root.appendChild(el);
+
+        setTimeout(() => {
+          el.style.transition = 'opacity .3s ease, transform .3s ease';
+          el.style.opacity    = '0';
+          el.style.transform  = 'translateY(8px) scale(.97)';
+          setTimeout(() => el.remove(), 320);
+        }, duration);
+      };
+    })();
+    </script>
+
+    <!--
+      5. SMOOTH ANCHOR NAVIGATION
+         Adds active class to nav links matching current hash.
+         Your React router can override this if needed.
+    -->
+    <script>
+    (() => {
+      const update = () => {
+        const hash = location.hash || '#';
+        document.querySelectorAll('a[href^="#"]').forEach(a => {
+          a.classList.toggle('isi-nav-active', a.getAttribute('href') === hash);
+        });
+      };
+      window.addEventListener('hashchange', update);
+      update();
+    })();
+    </script>
+
+    <!--
+      6. SECTION SCROLL SPY
+         Adds data-section="<id>" to <body> as user scrolls.
+         Use in CSS: body[data-section="hero"] .isi-nav { … }
+    -->
+    <script>
+    (() => {
+      const spy = () => {
+        const sections = document.querySelectorAll('section[id]');
+        const mid = window.innerHeight / 2;
+        for (const s of sections) {
+          const r = s.getBoundingClientRect();
+          if (r.top <= mid && r.bottom >= mid) {
+            document.body.dataset.section = s.id;
+            break;
+          }
+        }
+      };
+      window.addEventListener('scroll', spy, { passive: true });
+      spy();
+    })();
+    </script>
+
+    <!--
+      7. KEYBOARD SHORTCUT  —  / focuses first nav search input
+         Customise to suit your React app's needs.
+    -->
+    <script>
+    (() => {
+      document.addEventListener('keydown', e => {
+        if (e.key !== '/' || e.target.matches('input,textarea')) return;
+        const search = document.querySelector('[data-isi-search]');
+        if (search) { e.preventDefault(); search.focus(); }
+      });
+    })();
+    </script>
+
   </body>
 </html>
