@@ -1,29 +1,27 @@
 import { useEffect, useState, useRef, useCallback } from "react";
-import { FaGithub, FaLinkedin, FaWhatsapp, FaEnvelope } from "react-icons/fa";
 
-/* ════════════════════════════════════════════
-   DATA
-════════════════════════════════════════════ */
+/* ─── Design Tokens ──────────────────────────────────────────────────── */
+const C = {
+  bg0:"#080A0F", bg1:"#0D1017", bg2:"#131820", bg3:"#1C2333",
+  o1:"#4F8EF7",  o2:"#6BA3FF",  o3:"#93BBFF",  o4:"#2563EB",
+  accent:"#38BDF8", accentAlt:"#818CF8",
+  tw:"#F8FAFF", ts:"#C8D5F0", tm:"#7A90B8", tf:"#3A4F72",
+};
+
+/* ─── Data ───────────────────────────────────────────────────────────── */
 const NAV_LINKS = [
-  { label: "Home",     id: "home",     icon: "⌂" },
-  { label: "About",    id: "about",    icon: "◈" },
-  { label: "Services", id: "services", icon: "⬡" },
-  { label: "Projects", id: "projects", icon: "◉" },
-  { label: "Blog",     id: "blog",     icon: "✦" },
-  { label: "Contact",  id: "contact",  icon: "◎" },
-];
-
-const SOCIAL_LINKS = [
-  { href: "https://github.com/Perpetualisi",                        label: "GitHub",   Icon: FaGithub,   color: "#818cf8" },
-  { href: "mailto:isitech1111@gmail.com",                           label: "Email",    Icon: FaEnvelope, color: "#f87171" },
-  { href: "https://www.linkedin.com/in/perpetual-okan-759655344/", label: "LinkedIn", Icon: FaLinkedin, color: "#60a5fa" },
-  { href: "https://wa.me/2348103558837",                            label: "WhatsApp", Icon: FaWhatsapp, color: "#4ade80" },
+  { label:"Home",     id:"home"     },
+  { label:"About",    id:"about"    },
+  { label:"Services", id:"services" },
+  { label:"Projects", id:"projects" },
+  { label:"Blog",     id:"blog"     },
+  { label:"Contact",  id:"contact"  },
 ];
 
 const SERVICES = [
   "Web Design & Development",
   "Mobile App Development",
-  "UI/UX Design",
+  "UI / UX Design",
   "Brand Identity",
   "AI Integration",
   "Cloud & DevOps",
@@ -37,339 +35,206 @@ const TAGLINES = [
   "Engineering digital legacies.",
 ];
 
-/* ════════════════════════════════════════════
-   HOOKS
-════════════════════════════════════════════ */
-const useInView = (threshold = 0.05) => {
-  const ref = useRef(null);
-  const [visible, setVisible] = useState(false);
-  useEffect(() => {
-    const obs = new IntersectionObserver(
-      ([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect(); } },
-      { threshold }
-    );
-    if (ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
-  }, [threshold]);
-  return { ref, visible };
-};
+const SOCIAL_LINKS = [
+  { href:"https://github.com/Perpetualisi",                       label:"GitHub",   color:C.o1,
+    svg: c=><svg viewBox="0 0 24 24" width="16" height="16" fill={c}><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg> },
+  { href:"mailto:isitech1111@gmail.com",                          label:"Email",    color:"#f87171",
+    svg: c=><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2 6 12 13 22 6"/></svg> },
+  { href:"https://www.linkedin.com/in/perpetual-okan-759655344/",label:"LinkedIn",  color:C.o2,
+    svg: c=><svg viewBox="0 0 24 24" width="16" height="16" fill={c}><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg> },
+  { href:"https://wa.me/2348103558837",                           label:"WhatsApp", color:"#4ade80",
+    svg: c=><svg viewBox="0 0 24 24" width="16" height="16" fill={c}><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg> },
+];
 
-/* ════════════════════════════════════════════
-   3D LOGO (matches Navbar)
-════════════════════════════════════════════ */
+const CONTACT_ITEMS = [
+  { label:"isitech1111@gmail.com", href:"mailto:isitech1111@gmail.com", color:C.o1      },
+  { label:"+234 810 355 8837",     href:"tel:+2348103558837",           color:C.accent  },
+  { label:"Nigeria",               href:null,                           color:C.accentAlt },
+];
+
+/* ─── Hex Pattern ────────────────────────────────────────────────────── */
+const HexPattern = () => (
+  <svg aria-hidden="true" style={{position:"absolute",inset:0,width:"100%",height:"100%",zIndex:0,pointerEvents:"none",opacity:0.035}}>
+    <defs>
+      <pattern id="ft_hex1" x="0" y="0" width="60" height="69.28" patternUnits="userSpaceOnUse">
+        <polygon points="30,0 60,17.32 60,51.96 30,69.28 0,51.96 0,17.32" fill="none" stroke="#4F8EF7" strokeWidth="0.7"/>
+      </pattern>
+      <pattern id="ft_hex2" x="30" y="34.64" width="60" height="69.28" patternUnits="userSpaceOnUse">
+        <polygon points="30,0 60,17.32 60,51.96 30,69.28 0,51.96 0,17.32" fill="none" stroke="#38BDF8" strokeWidth="0.45" opacity="0.5"/>
+      </pattern>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#ft_hex1)"/>
+    <rect width="100%" height="100%" fill="url(#ft_hex2)"/>
+  </svg>
+);
+
+/* ─── Logo ───────────────────────────────────────────────────────────── */
 const FooterLogo = ({ onClick }) => {
   const [hov, setHov] = useState(false);
   return (
-    <button
-      onClick={onClick}
-      onMouseEnter={() => setHov(true)}
-      onMouseLeave={() => setHov(false)}
-      style={{ background:"none",border:"none",cursor:"pointer",padding:0,display:"flex",alignItems:"center",gap:11,transform:hov?"scale(1.03)":"scale(1)",transition:"transform 0.3s cubic-bezier(0.23,1,0.32,1)" }}
-      aria-label="IsiTech Innovations home"
-    >
-      <svg width="42" height="42" viewBox="0 0 80 80" style={{ flexShrink:0,filter:hov?"drop-shadow(0 0 14px rgba(129,140,248,0.9))":"drop-shadow(0 0 6px rgba(129,140,248,0.5))",transition:"filter 0.3s ease" }}>
-        <defs>
-          <linearGradient id="ft_f1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#c7d2fe"/><stop offset="100%" stopColor="#6366f1"/></linearGradient>
-          <linearGradient id="ft_f2" x1="1" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#818cf8"/><stop offset="100%" stopColor="#312e81"/></linearGradient>
-          <linearGradient id="ft_f3" x1="0" y1="1" x2="1" y2="0"><stop offset="0%" stopColor="#4f46e5"/><stop offset="100%" stopColor="#a78bfa"/></linearGradient>
-          <linearGradient id="ft_f4" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#e0e7ff"/><stop offset="100%" stopColor="#818cf8"/></linearGradient>
-          <filter id="ft_glow"><feGaussianBlur stdDeviation="1.5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-        </defs>
-        <polygon points="40,4 72,22 40,40 8,22" fill="url(#ft_f4)" opacity="0.95"/>
-        <polygon points="8,22 40,40 40,76 8,58" fill="url(#ft_f2)" opacity="0.95"/>
-        <polygon points="72,22 40,40 40,76 72,58" fill="url(#ft_f3)" opacity="0.95"/>
-        <polyline points="40,4 40,40 40,76" stroke="rgba(255,255,255,0.25)" strokeWidth="0.8" fill="none"/>
-        <polyline points="8,22 40,40 72,22" stroke="rgba(255,255,255,0.3)" strokeWidth="0.8" fill="none"/>
-        <circle cx="40" cy="40" r="3" fill="white" opacity="0.5" filter="url(#ft_glow)"/>
-        <line x1="8" y1="22" x2="40" y2="4" stroke="rgba(199,210,254,0.6)" strokeWidth="1">
-          <animate attributeName="opacity" values="0.3;1;0.3" dur="2.5s" repeatCount="indefinite"/>
-        </line>
-      </svg>
-      <div style={{ display:"flex",flexDirection:"column",lineHeight:1 }}>
-        <span style={{ fontFamily:"'Syne', sans-serif",fontWeight:900,fontSize:"clamp(17px,2vw,22px)",letterSpacing:"-0.02em",background:hov?"linear-gradient(135deg,#e0e7ff 0%,#818cf8 40%,#c084fc 70%,#f472b6 100%)":"linear-gradient(135deg,#c7d2fe 0%,#818cf8 50%,#a78bfa 100%)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",transition:"all 0.3s ease",filter:hov?"drop-shadow(0 0 8px rgba(129,140,248,0.6))":"none" }}>
-          IsiTech
-        </span>
-        <span style={{ fontFamily:"'DM Sans', sans-serif",fontWeight:500,fontSize:"clamp(8px,0.9vw,11px)",letterSpacing:"0.18em",textTransform:"uppercase",color:"rgba(165,180,252,0.65)",marginTop:2 }}>
-          Innovations
-        </span>
+    <button onClick={onClick} onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}
+      style={{background:"none",border:"none",cursor:"pointer",padding:0,display:"flex",alignItems:"center",gap:11,transform:hov?"scale(1.03)":"none",transition:"transform 0.3s cubic-bezier(0.23,1,0.32,1)"}}
+      aria-label="IsiTech Innovations home">
+      {/* Logo mark — same as Navbar */}
+      <div style={{width:40,height:40,borderRadius:11,background:"linear-gradient(135deg,#4F8EF7,#38BDF8)",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:18,color:"#fff",flexShrink:0,boxShadow:hov?"0 0 26px rgba(79,142,247,0.65)":"0 0 14px rgba(79,142,247,0.38)",transition:"box-shadow 0.3s ease"}}>I</div>
+      <div style={{display:"flex",flexDirection:"column",lineHeight:1}}>
+        <span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:"clamp(17px,2vw,21px)",letterSpacing:"-0.02em",background:hov?`linear-gradient(135deg,${C.tw},${C.o1},${C.accent})`:`linear-gradient(135deg,${C.ts},${C.o1})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",transition:"all 0.3s ease"}}>IsiTech</span>
+        <span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:500,fontSize:"clamp(8px,0.9vw,10px)",letterSpacing:"0.18em",textTransform:"uppercase",color:C.tm,marginTop:2}}>Innovations</span>
       </div>
     </button>
   );
 };
 
-/* ════════════════════════════════════════════
-   FOOTER LINK
-════════════════════════════════════════════ */
-const FooterLink = ({ label, id, onNav, index, visible }) => {
-  const [hov, setHov] = useState(false);
-  return (
-    <button
-      onClick={() => onNav(id)}
-      onMouseEnter={() => setHov(true)}
-      onMouseLeave={() => setHov(false)}
-      style={{
-        background:"none", border:"none", cursor:"pointer",
-        fontFamily:"'DM Sans', sans-serif",
-        fontSize:"clamp(13px,1.3vw,14px)", fontWeight:500,
-        color: hov ? "#c7d2fe" : "rgba(165,180,252,0.6)",
-        textAlign:"left", padding:"4px 0",
-        display:"flex", alignItems:"center", gap:8,
-        transition:"all 0.25s ease",
-        transform: hov ? "translateX(5px)" : "translateX(0)",
-        animation: visible ? `ft_fadeUp 0.55s ease both ${0.3 + index * 0.06}s` : "none",
-        opacity: visible ? 1 : 0,
-      }}
-    >
-      <span style={{ width:5,height:5,borderRadius:"50%",flexShrink:0,background: hov ? "#818cf8" : "rgba(129,140,248,0.3)",boxShadow: hov ? "0 0 7px #818cf8" : "none",transition:"all 0.25s ease" }} />
-      {label}
-    </button>
-  );
-};
-
-/* ════════════════════════════════════════════
-   SOCIAL ICON BUTTON
-════════════════════════════════════════════ */
-const SocialIcon = ({ link }) => {
-  const [hov, setHov] = useState(false);
-  return (
-    <a
-      href={link.href}
-      target={link.href.startsWith("http") ? "_blank" : undefined}
-      rel={link.href.startsWith("http") ? "noopener noreferrer" : undefined}
-      aria-label={link.label}
-      onMouseEnter={() => setHov(true)}
-      onMouseLeave={() => setHov(false)}
-      style={{
-        width:40, height:40, borderRadius:12, flexShrink:0,
-        display:"flex", alignItems:"center", justifyContent:"center",
-        background: hov ? `rgba(${link.color.slice(1).match(/../g).map(h=>parseInt(h,16)).join(",")},0.2)` : "rgba(255,255,255,0.06)",
-        border: hov ? `1px solid ${link.color}55` : "1px solid rgba(255,255,255,0.09)",
-        color: hov ? link.color : "rgba(165,180,252,0.65)",
-        backdropFilter:"blur(12px)",
-        boxShadow: hov ? `0 6px 20px rgba(${link.color.slice(1).match(/../g).map(h=>parseInt(h,16)).join(",")},0.3), inset 0 1px 0 rgba(255,255,255,0.08)` : "none",
-        transform: hov ? "translateY(-4px) scale(1.08)" : "translateY(0) scale(1)",
-        transition:"all 0.3s cubic-bezier(0.23,1,0.32,1)",
-        textDecoration:"none",
-      }}
-    >
-      <link.Icon size={16} />
-    </a>
-  );
-};
-
-/* ════════════════════════════════════════════
-   FOOTER
-════════════════════════════════════════════ */
+/* ─── Footer ─────────────────────────────────────────────────────────── */
 const Footer = () => {
-  const { ref, visible } = useInView(0.05);
-  const year = new Date().getFullYear();
+  const ref = useRef(null);
+  const [visible, setVisible] = useState(false);
   const [taglineIdx, setTaglineIdx] = useState(0);
-  const [taglineVisible, setTaglineVisible] = useState(true);
+  const [taglineIn, setTaglineIn] = useState(true);
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
+  const year = new Date().getFullYear();
 
-  useEffect(() => {
-    const iv = setInterval(() => {
-      setTaglineVisible(false);
-      setTimeout(() => {
-        setTaglineIdx(p => (p + 1) % TAGLINES.length);
-        setTaglineVisible(true);
-      }, 350);
-    }, 3500);
-    return () => clearInterval(iv);
-  }, []);
+  useEffect(()=>{
+    const obs=new IntersectionObserver(([e])=>{if(e.isIntersecting)setVisible(true);},{threshold:0.05});
+    if(ref.current)obs.observe(ref.current);
+    return()=>obs.disconnect();
+  },[]);
 
-  const handleNav = useCallback((id) => {
-    const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior:"smooth", block:"start" });
-  }, []);
+  useEffect(()=>{
+    const iv=setInterval(()=>{
+      setTaglineIn(false);
+      setTimeout(()=>{setTaglineIdx(p=>(p+1)%TAGLINES.length);setTaglineIn(true);},350);
+    },3600);
+    return()=>clearInterval(iv);
+  },[]);
 
-  const handleSubscribe = useCallback((e) => {
-    e.preventDefault();
-    if (email.trim()) { setSubscribed(true); setEmail(""); }
-  }, [email]);
+  const handleNav=useCallback(id=>{document.getElementById(id)?.scrollIntoView({behavior:"smooth",block:"start"});},[]);
+  const handleSubscribe=useCallback(e=>{e.preventDefault();if(email.trim()){setSubscribed(true);setEmail("");};},[email]);
 
-  return (
+  /* Animation shorthand — avoids animation+animationFillMode conflict */
+  const anim=(name,dur="0.7s",delay="0s")=>
+    visible ? `${name} ${dur} cubic-bezier(0.23,1,0.32,1) ${delay} both` : "none";
+
+  return(
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300&display=swap');
+        @keyframes ft_fadeUp  {from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes ft_pulse   {0%,100%{transform:scale(1);opacity:.8}50%{transform:scale(1.2);opacity:1}}
+        @keyframes ft_hexDrift{from{transform:translateY(0)}to{transform:translateY(80px)}}
+        @keyframes ft_float1  {0%,100%{transform:translateY(0) rotate(0deg)}33%{transform:translateY(-12px) rotate(2.5deg)}66%{transform:translateY(-5px) rotate(-1.5deg)}}
+        @keyframes ft_spin    {from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+        @keyframes ft_gradText{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+        @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
 
-        @keyframes ft_fadeUp    { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes ft_fadeDown  { from{opacity:0;transform:translateY(-18px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes ft_pulse     { 0%,100%{transform:scale(1);opacity:.8} 50%{transform:scale(1.2);opacity:1} }
-        @keyframes ft_gridMove  { from{transform:translateY(0)} to{transform:translateY(50px)} }
-        @keyframes ft_spin      { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-        @keyframes ft_float1    { 0%,100%{transform:translateY(0) rotate(0deg)} 33%{transform:translateY(-12px) rotate(3deg)} 66%{transform:translateY(-5px) rotate(-2deg)} }
-        @keyframes ft_shimmer   { 0%{transform:translateX(-100%) skewX(-12deg)} 100%{transform:translateX(250%) skewX(-12deg)} }
-        @keyframes ft_scanline  {
-          0%  { transform: translateY(-100%); }
-          100% { transform: translateY(100%); }
-        }
-
-        .ft-footer {
-          position: relative; width: 100%; overflow: hidden;
-          background: linear-gradient(160deg, #040613 0%, #070a1a 40%, #0b0519 70%, #05091a 100%);
-          font-family: 'DM Sans', sans-serif;
-        }
-        .ft-scanline {
-          position: absolute; inset: 0; pointer-events: none; z-index: 3;
-          background: linear-gradient(transparent 50%, rgba(0,0,0,0.018) 50%);
-          background-size: 100% 3px;
-        }
-        .ft-inner {
-          max-width: 1300px; margin: 0 auto;
-          padding: 0 clamp(16px,4.5vw,72px);
-          position: relative; z-index: 10;
-        }
-        .ft-grid {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 40px 32px;
-          padding: clamp(56px,8vw,96px) 0 clamp(40px,6vw,64px);
-        }
-        @media (min-width: 640px) {
-          .ft-grid { grid-template-columns: 1fr 1fr; }
-        }
-        @media (min-width: 1024px) {
-          .ft-grid { grid-template-columns: 2fr 1fr 1fr 1.5fr; gap: 40px 48px; }
-        }
-        .ft-divider {
-          height: 1px;
-          background: linear-gradient(90deg, transparent, rgba(129,140,248,0.28), transparent);
-          margin: 0;
-        }
-        .ft-bottom {
-          display: flex;
-          flex-direction: column;
-          gap: 14px;
-          padding: clamp(20px,3vw,28px) 0 clamp(24px,4vw,36px);
-          align-items: center;
-          text-align: center;
-        }
-        @media (min-width: 768px) {
-          .ft-bottom {
-            flex-direction: row;
-            justify-content: space-between;
-            text-align: left;
-          }
-        }
+        .ft-footer{position:relative;width:100%;overflow:hidden;background:linear-gradient(165deg,#050810 0%,#080A0F 40%,#0A0E18 70%,#070A12 100%);font-family:'DM Sans',sans-serif;color:#F8FAFF;}
+        .ft-scanline{position:absolute;inset:0;pointer-events:none;z-index:3;background:linear-gradient(transparent 50%,rgba(0,0,0,0.012) 50%);background-size:100% 3px;}
+        .ft-inner{max-width:1440px;margin:0 auto;padding:0 clamp(16px,4vw,80px);position:relative;z-index:10;}
+        .ft-grid{display:grid;grid-template-columns:1fr;gap:36px 28px;padding:clamp(52px,8vw,90px) 0 clamp(36px,5vw,60px);}
+        @media(min-width:640px){.ft-grid{grid-template-columns:1fr 1fr;}}
+        @media(min-width:1024px){.ft-grid{grid-template-columns:2fr 1fr 1fr 1.6fr;gap:40px 44px;}}
+        .ft-divider{height:1px;background:linear-gradient(90deg,transparent,rgba(79,142,247,0.30),transparent);margin:0;}
+        .ft-bottom{display:flex;flex-direction:column;gap:14px;padding:clamp(18px,3vw,26px) 0 clamp(22px,4vw,32px);align-items:center;text-align:center;}
+        @media(min-width:768px){.ft-bottom{flex-direction:row;justify-content:space-between;text-align:left;}}
+        input::placeholder{color:rgba(120,144,184,0.4);}
+        .ft-shapes{display:none !important;}
+        @media(min-width:600px){.ft-shapes{display:block !important;}}
       `}</style>
 
-      <footer ref={ref} className="ft-footer" aria-label="IsiTech Innovations Footer">
+      <footer ref={ref} className="ft-footer" aria-label="IsiTech Innovations footer">
 
-        {/* Grid bg */}
-        <div style={{ position:"absolute",inset:0,zIndex:0,overflow:"hidden",backgroundImage:`linear-gradient(rgba(129,140,248,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(129,140,248,0.03) 1px,transparent 1px)`,backgroundSize:"55px 55px",animation:"ft_gridMove 10s linear infinite" }} />
-
-        {/* Scanline */}
-        <div className="ft-scanline" />
+        {/* Hex pattern */}
+        <div aria-hidden="true" style={{position:"absolute",inset:0,zIndex:0,overflow:"hidden",animation:"ft_hexDrift 18s linear infinite"}}><HexPattern/></div>
 
         {/* Noise */}
-        <svg style={{ position:"absolute",inset:0,width:"100%",height:"100%",zIndex:0,opacity:0.018,pointerEvents:"none" }}>
-          <filter id="ft_noise"><feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter>
-          <rect width="100%" height="100%" filter="url(#ft_noise)"/>
-        </svg>
+        <svg aria-hidden="true" style={{position:"absolute",inset:0,width:"100%",height:"100%",zIndex:0,opacity:0.018,pointerEvents:"none"}}><filter id="ft_n"><feTurbulence type="fractalNoise" baseFrequency="0.68" numOctaves="3" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter><rect width="100%" height="100%" filter="url(#ft_n)"/></svg>
 
-        {/* Radial glows */}
-        <div style={{ position:"absolute",top:"0%",left:"15%",width:"clamp(240px,40vw,520px)",height:"clamp(240px,40vw,520px)",borderRadius:"50%",background:"radial-gradient(ellipse,rgba(99,102,241,0.1) 0%,transparent 70%)",pointerEvents:"none",zIndex:1 }} />
-        <div style={{ position:"absolute",bottom:"0%",right:"12%",width:"clamp(200px,32vw,420px)",height:"clamp(200px,32vw,420px)",borderRadius:"50%",background:"radial-gradient(ellipse,rgba(168,85,247,0.09) 0%,transparent 70%)",pointerEvents:"none",zIndex:1 }} />
+        <div className="ft-scanline" aria-hidden="true"/>
 
-        {/* Floating deco */}
-        <div style={{ position:"absolute",inset:0,zIndex:2,pointerEvents:"none",overflow:"hidden" }}>
-          <svg width="58" height="58" viewBox="0 0 80 80" style={{ position:"absolute",top:"8%",right:"3%",animation:"ft_float1 10s ease-in-out infinite",filter:"drop-shadow(0 0 10px #f472b655)" }}>
-            <defs><linearGradient id="ft_d1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#fce7f3"/><stop offset="100%" stopColor="#ec4899"/></linearGradient></defs>
-            <polygon points="40,4 76,40 40,76 4,40" fill="url(#ft_d1)" opacity="0.55"/>
-          </svg>
-          <svg width="64" height="64" viewBox="0 0 100 100" style={{ position:"absolute",top:"35%",right:"0.5%",animation:"ft_spin 22s linear infinite",filter:"drop-shadow(0 0 9px #67e8f955)" }}>
-            <defs><linearGradient id="ft_t1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#67e8f9"/><stop offset="100%" stopColor="#0891b2"/></linearGradient></defs>
-            <ellipse cx="50" cy="50" rx="45" ry="17" fill="none" stroke="url(#ft_t1)" strokeWidth="7" opacity="0.55"/>
-          </svg>
-          <svg width="48" height="48" viewBox="0 0 80 80" style={{ position:"absolute",bottom:"18%",left:"1.5%",animation:"ft_float1 8s ease-in-out infinite reverse",filter:"drop-shadow(0 0 8px #818cf855)" }}>
-            <defs><linearGradient id="ft_h1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#c7d2fe"/><stop offset="100%" stopColor="#6366f1"/></linearGradient></defs>
-            <polygon points="40,4 72,22 72,58 40,76 8,58 8,22" fill="url(#ft_h1)" opacity="0.5"/>
-          </svg>
+        {/* Glows */}
+        <div aria-hidden="true" style={{position:"absolute",top:0,left:"14%",width:"min(520px,44vw)",height:"min(520px,44vw)",borderRadius:"50%",background:"radial-gradient(ellipse,rgba(79,142,247,0.09) 0%,transparent 68%)",pointerEvents:"none",zIndex:1}}/>
+        <div aria-hidden="true" style={{position:"absolute",bottom:0,right:"10%",width:"min(420px,36vw)",height:"min(420px,36vw)",borderRadius:"50%",background:"radial-gradient(ellipse,rgba(56,189,248,0.07) 0%,transparent 68%)",pointerEvents:"none",zIndex:1}}/>
+
+        {/* Floating shapes */}
+        <div className="ft-shapes" aria-hidden="true" style={{position:"absolute",inset:0,zIndex:2,pointerEvents:"none",overflow:"hidden"}}>
+          <svg width="56" height="56" viewBox="0 0 90 90" style={{position:"absolute",top:"8%",right:"2.5%",animation:"ft_float1 10s ease-in-out infinite",filter:`drop-shadow(0 0 10px ${C.o1}55)`}}><polygon points="45,4 86,45 45,86 4,45" fill={C.o1} fillOpacity="0.06" stroke={C.o1} strokeWidth="1.1" opacity="0.65"/></svg>
+          <svg width="62" height="62" viewBox="0 0 100 100" style={{position:"absolute",top:"38%",right:"0.5%",animation:"ft_spin 24s linear infinite",filter:`drop-shadow(0 0 9px ${C.accent}50)`}}><ellipse cx="50" cy="50" rx="45" ry="17" fill="none" stroke={C.accent} strokeWidth="6.5" opacity="0.52"/></svg>
+          <svg width="48" height="48" viewBox="0 0 80 80" style={{position:"absolute",bottom:"15%",left:"1.5%",animation:"ft_float1 9s ease-in-out infinite reverse",filter:`drop-shadow(0 0 8px ${C.accentAlt}50)`}}><defs><linearGradient id="ft_sh1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#93BBFF"/><stop offset="100%" stopColor="#818CF8"/></linearGradient></defs><polygon points="40,4 72,22 72,58 40,76 8,58 8,22" fill="url(#ft_sh1)" opacity="0.45"/></svg>
         </div>
 
-        {/* Top separator with glow */}
-        <div style={{ height:1,background:"linear-gradient(90deg,transparent,rgba(129,140,248,0.5),rgba(192,132,252,0.4),transparent)",position:"relative",zIndex:5 }}>
-          <div style={{ position:"absolute",top:-20,left:"50%",transform:"translateX(-50%)",width:200,height:40,background:"radial-gradient(ellipse,rgba(129,140,248,0.3) 0%,transparent 70%)",filter:"blur(10px)" }} />
+        {/* Top separator */}
+        <div style={{height:1,background:`linear-gradient(90deg,transparent,${C.o1}55,${C.accent}44,transparent)`,position:"relative",zIndex:5}}>
+          <div style={{position:"absolute",top:-18,left:"50%",transform:"translateX(-50%)",width:180,height:36,background:`radial-gradient(ellipse,rgba(79,142,247,0.28) 0%,transparent 70%)`,filter:"blur(10px)"}}/>
         </div>
 
         <div className="ft-inner">
           <div className="ft-grid">
 
             {/* ── Brand column ── */}
-            <div style={{
-              display:"flex", flexDirection:"column", gap:18,
-              animation: visible ? "ft_fadeUp 0.7s ease both 0.1s" : "none",
-              opacity: visible ? 1 : 0,
-            }}>
-              <FooterLogo onClick={() => handleNav("home")} />
+            <div style={{display:"flex",flexDirection:"column",gap:18,opacity:visible?1:0,animation:anim("ft_fadeUp","0.7s","0.1s")}}>
+              <FooterLogo onClick={()=>handleNav("home")}/>
 
               {/* Animated tagline */}
-              <div style={{ minHeight:24 }}>
-                <p style={{
-                  color:"rgba(165,180,252,0.7)", fontSize:"clamp(13px,1.4vw,15px)",
-                  fontWeight:500, fontStyle:"italic", margin:0, lineHeight:1.6,
-                  borderLeft:"2px solid rgba(129,140,248,0.38)", paddingLeft:12,
-                  opacity: taglineVisible ? 1 : 0,
-                  transform: taglineVisible ? "translateY(0)" : "translateY(-8px)",
-                  transition:"opacity 0.35s ease, transform 0.35s ease",
-                }}>
-                  {TAGLINES[taglineIdx]}
-                </p>
-              </div>
+              <p style={{color:C.tm,fontSize:"clamp(13px,1.3vw,14.5px)",fontWeight:500,fontStyle:"italic",margin:0,lineHeight:1.6,borderLeft:`2px solid ${C.o1}40`,paddingLeft:12,opacity:taglineIn?1:0,transform:taglineIn?"translateY(0)":"translateY(-8px)",transition:"opacity 0.32s ease,transform 0.32s ease"}}>
+                {TAGLINES[taglineIdx]}
+              </p>
 
-              <p style={{ color:"rgba(165,180,252,0.5)",fontSize:"clamp(12px,1.3vw,13px)",lineHeight:1.8,margin:0,maxWidth:280 }}>
+              <p style={{color:C.tf,fontSize:"clamp(12px,1.2vw,13px)",lineHeight:1.85,margin:0,maxWidth:280}}>
                 Architecting transformative digital ecosystems that captivate audiences and drive measurable growth.
               </p>
 
-              {/* Availability */}
-              <div style={{ display:"flex",alignItems:"center",gap:8,padding:"7px 14px",borderRadius:100,background:"rgba(52,211,153,0.08)",border:"1px solid rgba(52,211,153,0.22)",width:"fit-content" }}>
-                <span style={{ width:6,height:6,borderRadius:"50%",background:"#34d399",boxShadow:"0 0 8px #34d399",animation:"ft_pulse 2s ease-in-out infinite",display:"inline-block" }} />
-                <span style={{ color:"#34d399",fontSize:10,fontWeight:700,letterSpacing:"0.12em" }}>AVAILABLE FOR PROJECTS</span>
+              {/* Availability badge */}
+              <div style={{display:"flex",alignItems:"center",gap:8,padding:"7px 14px",borderRadius:7,background:"rgba(74,222,128,0.07)",border:"1px solid rgba(74,222,128,0.22)",width:"fit-content"}}>
+                <span style={{width:6,height:6,borderRadius:"50%",background:"#4ade80",boxShadow:"0 0 8px #4ade80",animation:"ft_pulse 2s ease-in-out infinite",display:"inline-block",flexShrink:0}}/>
+                <span style={{color:"#4ade80",fontSize:10,fontWeight:700,letterSpacing:"0.12em",fontFamily:"'DM Sans',sans-serif"}}>AVAILABLE FOR PROJECTS</span>
               </div>
 
               {/* Social icons */}
-              <div style={{ display:"flex",gap:9,flexWrap:"wrap" }}>
-                {SOCIAL_LINKS.map((link, i) => <SocialIcon key={i} link={link} />)}
+              <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                {SOCIAL_LINKS.map((link,i)=>{
+                  const [hov,setHov]=useState(false);
+                  return(
+                    <a key={i} href={link.href} target={link.href.startsWith("http")?"_blank":undefined} rel={link.href.startsWith("http")?"noopener noreferrer":undefined} aria-label={link.label}
+                      onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}
+                      style={{width:40,height:40,borderRadius:11,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:hov?`${link.color}1e`:"rgba(255,255,255,0.05)",border:`1px solid ${hov?link.color+"55":"rgba(255,255,255,0.08)"}`,boxShadow:hov?`0 6px 18px ${link.color}30`:"none",transform:hov?"translateY(-4px) scale(1.08)":"none",transition:"all 0.28s cubic-bezier(0.23,1,0.32,1)",textDecoration:"none"}}>
+                      {link.svg(hov?link.color:C.tm)}
+                    </a>
+                  );
+                })}
               </div>
             </div>
 
             {/* ── Quick links ── */}
-            <div style={{
-              animation: visible ? "ft_fadeUp 0.7s ease both 0.2s" : "none",
-              opacity: visible ? 1 : 0,
-            }}>
-              <div style={{ marginBottom:18 }}>
-                <span style={{ color:"rgba(165,180,252,0.45)",fontSize:9,fontWeight:700,letterSpacing:"0.2em",textTransform:"uppercase" }}>Quick Links</span>
-                <div style={{ height:1,marginTop:8,background:"linear-gradient(90deg,rgba(129,140,248,0.35),transparent)" }} />
+            <div style={{opacity:visible?1:0,animation:anim("ft_fadeUp","0.7s","0.2s")}}>
+              <div style={{marginBottom:16}}>
+                <span style={{color:C.tf,fontSize:9,fontWeight:700,letterSpacing:"0.2em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}}>Quick Links</span>
+                <div style={{height:1,marginTop:7,background:`linear-gradient(90deg,${C.o1}40,transparent)`}}/>
               </div>
-              <div style={{ display:"flex",flexDirection:"column",gap:2 }}>
-                {NAV_LINKS.map((link, i) => (
-                  <FooterLink key={link.id} label={link.label} id={link.id} onNav={handleNav} index={i} visible={visible} />
-                ))}
+              <div style={{display:"flex",flexDirection:"column",gap:1}}>
+                {NAV_LINKS.map((link,i)=>{
+                  const [hov,setHov]=useState(false);
+                  return(
+                    <button key={link.id} onClick={()=>handleNav(link.id)}
+                      onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}
+                      style={{background:"none",border:"none",cursor:"pointer",fontFamily:"'DM Sans',sans-serif",fontSize:"clamp(13px,1.3vw,14px)",fontWeight:500,color:hov?C.ts:C.tm,textAlign:"left",padding:"5px 0",display:"flex",alignItems:"center",gap:8,transition:"all 0.22s ease",transform:hov?"translateX(5px)":"none",opacity:1}}>
+                      <span style={{width:5,height:5,borderRadius:"50%",flexShrink:0,background:hov?C.o1:"rgba(79,142,247,0.28)",boxShadow:hov?`0 0 7px ${C.o1}`:"none",transition:"all 0.22s ease"}}/>
+                      {link.label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
             {/* ── Services ── */}
-            <div style={{
-              animation: visible ? "ft_fadeUp 0.7s ease both 0.3s" : "none",
-              opacity: visible ? 1 : 0,
-            }}>
-              <div style={{ marginBottom:18 }}>
-                <span style={{ color:"rgba(165,180,252,0.45)",fontSize:9,fontWeight:700,letterSpacing:"0.2em",textTransform:"uppercase" }}>Services</span>
-                <div style={{ height:1,marginTop:8,background:"linear-gradient(90deg,rgba(192,132,252,0.35),transparent)" }} />
+            <div style={{opacity:visible?1:0,animation:anim("ft_fadeUp","0.7s","0.3s")}}>
+              <div style={{marginBottom:16}}>
+                <span style={{color:C.tf,fontSize:9,fontWeight:700,letterSpacing:"0.2em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}}>Services</span>
+                <div style={{height:1,marginTop:7,background:`linear-gradient(90deg,${C.accent}40,transparent)`}}/>
               </div>
-              <div style={{ display:"flex",flexDirection:"column",gap:2 }}>
-                {SERVICES.map((s, i) => (
-                  <div key={i} style={{
-                    color:"rgba(165,180,252,0.55)", fontSize:"clamp(13px,1.3vw,14px)",
-                    fontWeight:500, padding:"4px 0",
-                    display:"flex", alignItems:"center", gap:8,
-                    animation: visible ? `ft_fadeUp 0.55s ease both ${0.35 + i * 0.06}s` : "none",
-                    opacity: visible ? 1 : 0,
-                  }}>
-                    <span style={{ width:4,height:4,borderRadius:"50%",background:"rgba(192,132,252,0.45)",flexShrink:0 }} />
+              <div style={{display:"flex",flexDirection:"column",gap:1}}>
+                {SERVICES.map((s,i)=>(
+                  <div key={i} style={{color:C.tm,fontSize:"clamp(12.5px,1.2vw,13.5px)",fontWeight:500,padding:"5px 0",display:"flex",alignItems:"center",gap:8}}>
+                    <span style={{width:4,height:4,borderRadius:"50%",background:`${C.accent}55`,flexShrink:0}}/>
                     {s}
                   </div>
                 ))}
@@ -377,104 +242,62 @@ const Footer = () => {
             </div>
 
             {/* ── Newsletter + Contact ── */}
-            <div style={{
-              display:"flex", flexDirection:"column", gap:22,
-              animation: visible ? "ft_fadeUp 0.7s ease both 0.4s" : "none",
-              opacity: visible ? 1 : 0,
-            }}>
-              {/* Newsletter */}
-              <div style={{
-                padding:"20px",
-                borderRadius:18,
-                background:"linear-gradient(160deg,rgba(255,255,255,0.055),rgba(255,255,255,0.018))",
-                border:"1px solid rgba(129,140,248,0.15)",
-                backdropFilter:"blur(16px)",
-                boxShadow:"inset 0 1px 0 rgba(255,255,255,0.06)",
-              }}>
-                <div style={{ height:2,background:"linear-gradient(90deg,#6366f1,#a855f7,#f472b6)",borderRadius:1,marginBottom:14,boxShadow:"0 0 8px rgba(129,140,248,0.4)" }} />
-                <h4 style={{ fontFamily:"'Syne', sans-serif",fontWeight:900,fontSize:"clamp(14px,1.5vw,16px)",letterSpacing:"-0.01em",margin:"0 0 6px 0",background:"linear-gradient(135deg,#e0e7ff,#818cf8)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text" }}>
-                  Stay in the Loop
-                </h4>
-                <p style={{ color:"rgba(165,180,252,0.5)",fontSize:11,margin:"0 0 14px 0",lineHeight:1.6 }}>
-                  Get insights on design, tech & digital growth.
-                </p>
+            <div style={{display:"flex",flexDirection:"column",gap:20,opacity:visible?1:0,animation:anim("ft_fadeUp","0.7s","0.4s")}}>
+
+              {/* Newsletter card */}
+              <div style={{padding:"18px 20px",borderRadius:14,background:C.bg2,border:`1px solid rgba(79,142,247,0.16)`,position:"relative",overflow:"hidden"}}>
+                <div style={{position:"absolute",top:0,left:0,right:0,height:2,background:`linear-gradient(90deg,${C.o1},${C.accent},${C.accentAlt})`}}/>
+                <h4 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:"clamp(13.5px,1.4vw,15.5px)",letterSpacing:"-0.01em",margin:"0 0 5px",background:`linear-gradient(135deg,${C.tw},${C.o1})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>Stay in the Loop</h4>
+                <p style={{color:C.tf,fontSize:11,margin:"0 0 13px",lineHeight:1.6,fontFamily:"'DM Sans',sans-serif"}}>Get insights on design, tech & digital growth.</p>
                 {subscribed ? (
-                  <div style={{ padding:"10px 14px",borderRadius:10,background:"rgba(52,211,153,0.12)",border:"1px solid rgba(52,211,153,0.3)",color:"#34d399",fontSize:12,fontWeight:700,textAlign:"center",animation:"ft_fadeUp 0.4s ease" }}>
-                    ✓ You're subscribed! Welcome aboard 🎉
-                  </div>
+                  <div style={{padding:"9px 13px",borderRadius:9,background:"rgba(74,222,128,0.10)",border:"1px solid rgba(74,222,128,0.28)",color:"#4ade80",fontSize:12,fontWeight:700,textAlign:"center"}}>✓ Welcome aboard! 🎉</div>
                 ) : (
-                  <div style={{ display:"flex",gap:8 }}>
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={e => setEmail(e.target.value)}
-                      onKeyDown={e => e.key === "Enter" && handleSubscribe(e)}
-                      placeholder="your@email.com"
-                      style={{ flex:1,padding:"9px 13px",borderRadius:9,background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.09)",color:"#e0e7ff",fontFamily:"'DM Sans', sans-serif",fontSize:12,outline:"none",colorScheme:"dark",minWidth:0 }}
-                    />
-                    <button
-                      onClick={handleSubscribe}
-                      style={{ padding:"9px 14px",borderRadius:9,border:"none",cursor:"pointer",background:"linear-gradient(135deg,#6366f1,#7c3aed)",color:"#fff",fontFamily:"'DM Sans', sans-serif",fontSize:12,fontWeight:700,flexShrink:0,transition:"all 0.25s ease" }}
-                    >
-                      →
-                    </button>
+                  <div style={{display:"flex",gap:7}}>
+                    <input type="email" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleSubscribe(e)} placeholder="your@email.com"
+                      style={{flex:1,padding:"9px 12px",borderRadius:8,background:C.bg1,border:"1px solid rgba(255,255,255,0.08)",color:C.tw,fontFamily:"'DM Sans',sans-serif",fontSize:12,outline:"none",colorScheme:"dark",minWidth:0}}/>
+                    <button onClick={handleSubscribe} style={{padding:"9px 14px",borderRadius:8,border:"none",cursor:"pointer",background:`linear-gradient(135deg,${C.o1},${C.o4})`,color:"#fff",fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:700,flexShrink:0,transition:"all 0.22s ease",boxShadow:`0 4px 14px rgba(79,142,247,0.35)`}}
+                      onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.boxShadow="0 8px 22px rgba(79,142,247,0.55)";}}
+                      onMouseLeave={e=>{e.currentTarget.style.transform="none";e.currentTarget.style.boxShadow=`0 4px 14px rgba(79,142,247,0.35)`;}}>→</button>
                   </div>
                 )}
               </div>
 
-              {/* Contact quick info */}
-              <div style={{ display:"flex",flexDirection:"column",gap:10 }}>
-                <div style={{ color:"rgba(165,180,252,0.45)",fontSize:9,fontWeight:700,letterSpacing:"0.2em",textTransform:"uppercase" }}>Contact</div>
-                {[
-                  { label:"isitech1111@gmail.com", href:"mailto:isitech1111@gmail.com", col:"#818cf8" },
-                  { label:"+234 810 355 8837",     href:"tel:+2348103558837",           col:"#c084fc" },
-                  { label:"Nigeria",               href:null,                            col:"#34d399" },
-                ].map((c, i) => (
-                  c.href ? (
-                    <a key={i} href={c.href} style={{ color:"rgba(165,180,252,0.6)",fontSize:"clamp(12px,1.3vw,13px)",textDecoration:"none",display:"flex",alignItems:"center",gap:7,transition:"color 0.2s ease" }}
-                      onMouseEnter={e => e.currentTarget.style.color = c.col}
-                      onMouseLeave={e => e.currentTarget.style.color = "rgba(165,180,252,0.6)"}
-                    >
-                      <span style={{ width:4,height:4,borderRadius:"50%",background:c.col,opacity:0.7,flexShrink:0 }} />
-                      {c.label}
-                    </a>
-                  ) : (
-                    <div key={i} style={{ color:"rgba(165,180,252,0.6)",fontSize:"clamp(12px,1.3vw,13px)",display:"flex",alignItems:"center",gap:7 }}>
-                      <span style={{ width:4,height:4,borderRadius:"50%",background:c.col,opacity:0.7,flexShrink:0 }} />
-                      {c.label}
-                    </div>
-                  )
-                ))}
+              {/* Quick contact */}
+              <div style={{display:"flex",flexDirection:"column",gap:9}}>
+                <div style={{color:C.tf,fontSize:9,fontWeight:700,letterSpacing:"0.2em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}}>Contact</div>
+                {CONTACT_ITEMS.map((item,i)=>{
+                  const [hov,setHov]=useState(false);
+                  const inner=<div onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)} style={{color:hov?item.color:C.tm,fontSize:"clamp(12px,1.2vw,13px)",display:"flex",alignItems:"center",gap:7,transition:"color 0.2s ease",cursor:item.href?"pointer":"default"}}>
+                    <span style={{width:4,height:4,borderRadius:"50%",background:item.color,opacity:hov?1:0.6,flexShrink:0,transition:"opacity 0.2s ease"}}/>
+                    {item.label}
+                  </div>;
+                  return item.href
+                    ? <a key={i} href={item.href} style={{textDecoration:"none"}}>{inner}</a>
+                    : <div key={i}>{inner}</div>;
+                })}
               </div>
             </div>
-          </div>
+
+          </div>{/* end grid */}
 
           {/* Divider */}
-          <div className="ft-divider" style={{ opacity: visible ? 1 : 0, transition:"opacity 0.6s ease 0.6s" }} />
+          <div className="ft-divider" style={{opacity:visible?1:0,transition:"opacity 0.6s ease 0.6s"}}/>
 
           {/* Bottom row */}
-          <div className="ft-bottom" style={{ animation: visible ? "ft_fadeUp 0.6s ease both 0.65s" : "none", opacity: visible ? 1 : 0 }}>
-            <p style={{ color:"rgba(165,180,252,0.4)",fontSize:12,margin:0,fontFamily:"'DM Sans', sans-serif" }}>
-              © {year} <span style={{ color:"rgba(165,180,252,0.65)",fontWeight:700 }}>IsiTech Innovations</span>. All Rights Reserved.
+          <div className="ft-bottom" style={{opacity:visible?1:0,animation:anim("ft_fadeUp","0.6s","0.65s")}}>
+            <p style={{color:C.tf,fontSize:12,margin:0,fontFamily:"'DM Sans',sans-serif"}}>
+              © {year}{" "}<span style={{color:C.tm,fontWeight:700}}>IsiTech Innovations</span>. All Rights Reserved.
             </p>
-
-            {/* Legal links */}
-            <div style={{ display:"flex",gap:20,flexWrap:"wrap",justifyContent:"center" }}>
-              {["Privacy Policy","Terms of Service","Cookie Policy"].map((t, i) => (
-                <button key={i} style={{ background:"none",border:"none",cursor:"pointer",color:"rgba(165,180,252,0.4)",fontSize:11,fontFamily:"'DM Sans', sans-serif",fontWeight:500,padding:0,transition:"color 0.2s ease" }}
-                  onMouseEnter={e => e.currentTarget.style.color = "rgba(165,180,252,0.8)"}
-                  onMouseLeave={e => e.currentTarget.style.color = "rgba(165,180,252,0.4)"}
-                >
-                  {t}
-                </button>
+            <div style={{display:"flex",gap:18,flexWrap:"wrap",justifyContent:"center"}}>
+              {["Privacy Policy","Terms of Service","Cookie Policy"].map((t,i)=>(
+                <button key={i} style={{background:"none",border:"none",cursor:"pointer",color:C.tf,fontSize:11,fontFamily:"'DM Sans',sans-serif",fontWeight:500,padding:0,transition:"color 0.2s ease"}}
+                  onMouseEnter={e=>e.currentTarget.style.color=C.ts} onMouseLeave={e=>e.currentTarget.style.color=C.tf}>{t}</button>
               ))}
             </div>
-
-            {/* Made with */}
-            <div style={{ display:"flex",alignItems:"center",gap:6 }}>
-              <span style={{ color:"rgba(165,180,252,0.35)",fontSize:11 }}>Crafted with</span>
-              <span style={{ fontSize:13,animation:"ft_pulse 2s ease-in-out infinite",display:"inline-block" }}>♥</span>
-              <span style={{ color:"rgba(165,180,252,0.35)",fontSize:11 }}>in Nigeria</span>
+            <div style={{display:"flex",alignItems:"center",gap:6}}>
+              <span style={{color:C.tf,fontSize:11,fontFamily:"'DM Sans',sans-serif"}}>Crafted with</span>
+              <span style={{fontSize:13,animation:"ft_pulse 2s ease-in-out infinite",display:"inline-block",color:"#f87171"}}>♥</span>
+              <span style={{color:C.tf,fontSize:11,fontFamily:"'DM Sans',sans-serif"}}>in Nigeria</span>
             </div>
           </div>
         </div>

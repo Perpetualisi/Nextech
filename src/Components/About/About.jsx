@@ -1,12 +1,17 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import * as THREE from "three";
 
-/* ════════════════════════════════════════════
-   CONTENT
-════════════════════════════════════════════ */
+/* ─── Design Tokens (mirrors Hero exactly) ───────────────────────────── */
+const C = {
+  bg0: "#080A0F", bg1: "#0D1017", bg2: "#131820", bg3: "#1C2333",
+  o1: "#4F8EF7", o2: "#6BA3FF", o3: "#93BBFF", o4: "#2563EB",
+  accent: "#38BDF8", accentAlt: "#818CF8",
+  tw: "#F8FAFF", ts: "#C8D5F0", tm: "#7A90B8", tf: "#3A4F72",
+};
+
+/* ─── Content ────────────────────────────────────────────────────────── */
 const ABOUT = {
   badge: "Who We Are",
-  title: "About IsiTech\nInnovations",
   tagline: "We don't just build products — we engineer digital legacies.",
   description: [
     "At IsiTech Innovations, we architect transformative digital ecosystems that captivate audiences, drive conversions, and propel brands into their next era of growth.",
@@ -14,25 +19,37 @@ const ABOUT = {
     "Our philosophy is human-first: boundless creativity married to emerging tech, solving complex business challenges with clarity and conviction.",
   ],
   highlights: [
-    { icon: "⬡", label: "Human-First Design", desc: "Every pixel serves a purpose" },
-    { icon: "◈", label: "Full-Stack Mastery", desc: "From concept to deployment" },
-    { icon: "◉", label: "AI-Powered Solutions", desc: "Intelligence built in by default" },
-    { icon: "◎", label: "Measurable Results", desc: "Data-driven & outcome-focused" },
+    { icon: "⬡", label: "Human-First Design",   desc: "Every pixel serves a purpose" },
+    { icon: "◈", label: "Full-Stack Mastery",    desc: "From concept to deployment" },
+    { icon: "◉", label: "AI-Powered Solutions",  desc: "Intelligence built in by default" },
+    { icon: "◎", label: "Measurable Results",    desc: "Data-driven & outcome-focused" },
   ],
   stats: [
-    { value: "8+",   label: "Years Experience", color: "#818cf8" },
-    { value: "500+", label: "Projects Delivered", color: "#c084fc" },
-    { value: "98%",  label: "Client Retention",  color: "#67e8f9" },
-    { value: "45+",  label: "Expert Team",        color: "#f472b6" },
+    { value: "8+",   label: "Years Experience",    color: C.accentAlt },
+    { value: "1200+",label: "Projects Delivered",  color: C.o1 },
+    { value: "99%",  label: "Client Retention",    color: C.accent },
+    { value: "180+", label: "Expert Engineers",    color: C.o2 },
   ],
-  cta:  { label: "Discover Our Services", href: "#services" },
-  cta2: { label: "View Case Studies",     href: "#projects" },
+  tabs: ["Our Story", "Our Values", "Our Process"],
+  tabContent: [
+    "Founded on the belief that technology should empower people, IsiTech Innovations has grown from a small creative studio to a full-service digital powerhouse trusted by brands across 30+ countries. Every engagement starts with deep listening and ends with measurable impact.",
+    "We operate on four pillars: radical transparency, relentless innovation, human-centered design, and outcome-driven execution. These aren't buzzwords — they're the standards we hold ourselves to on every project, every day.",
+    "Discovery → Strategy → Design → Build → Launch → Optimize. Our six-phase process ensures nothing is left to chance. Each phase has defined deliverables, clear milestones, and regular client checkpoints so you're always in control.",
+  ],
+  skillBars: [
+    { label: "UI/UX & Branding",   pct: 96, color: C.o1 },
+    { label: "Full-Stack Dev",     pct: 93, color: C.accent },
+    { label: "Cloud & DevOps",     pct: 89, color: C.accentAlt },
+    { label: "AI Integration",     pct: 85, color: C.o2 },
+  ],
+  avatarColors: [
+    ["#4F8EF7","#1E3F7A"],["#38BDF8","#0C4A6E"],["#818CF8","#312E81"],
+    ["#4F8EF7","#1E3A6A"],["#38BDF8","#0E4F6F"],
+  ],
 };
 
-/* ════════════════════════════════════════════
-   HOOKS
-════════════════════════════════════════════ */
-const useInView = (threshold = 0.12) => {
+/* ─── Hooks ──────────────────────────────────────────────────────────── */
+const useInView = (threshold = 0.1) => {
   const ref = useRef(null);
   const [visible, setVisible] = useState(false);
   useEffect(() => {
@@ -51,6 +68,7 @@ const useCounter = (target, duration = 1800, active = false) => {
   useEffect(() => {
     if (!active) return;
     const num = parseFloat(target.replace(/[^0-9.]/g, ""));
+    if (isNaN(num)) return;
     const step = num / (duration / 16);
     let cur = 0;
     const t = setInterval(() => {
@@ -60,358 +78,433 @@ const useCounter = (target, duration = 1800, active = false) => {
     }, 16);
     return () => clearInterval(t);
   }, [active, target, duration]);
-  const suffix = target.replace(/[0-9.]/g, "");
+  const suffix = target.replace(/[0-9.,]/g, "");
   const isFloat = target.includes(".");
-  return (val >= 1 ? (isFloat ? val.toFixed(1) : Math.floor(val).toString()) : "0") + suffix;
+  return (val >= 1 ? (isFloat ? val.toFixed(1) : Math.floor(val).toLocaleString()) : "0") + suffix;
 };
 
-/* ════════════════════════════════════════════
-   THREE.JS SCENE
-════════════════════════════════════════════ */
+/* ─── IsiTech Identity Graph — "Who We Are" 3D scene ───────────────── */
+//
+// Centre:  IsiTech logo-sphere (morphing icosahedron)
+// Pillars: 4 orbiting pillar nodes with HTML label overlays
+//          projected from 3D world-space each frame
+// Pulses:  data-flow particles travel from centre → each pillar
+// Stats:   4 secondary mini-nodes carrying live numbers
+//
+const PILLARS = [
+  { label: "Human-First",  sub: "Design",          color: "#4F8EF7", hex: 0x4F8EF7, angle: 0          },
+  { label: "Full-Stack",   sub: "Engineering",      color: "#38BDF8", hex: 0x38BDF8, angle: Math.PI/2  },
+  { label: "AI-Powered",   sub: "Intelligence",     color: "#818CF8", hex: 0x818CF8, angle: Math.PI    },
+  { label: "Measurable",   sub: "Results",          color: "#6BA3FF", hex: 0x6BA3FF, angle: 3*Math.PI/2},
+];
+const STAT_NODES = [
+  { label: "8+ yrs",    color: "#38BDF8", angle: Math.PI/4       },
+  { label: "1200+",     color: "#4F8EF7", angle: 3*Math.PI/4     },
+  { label: "99%",       color: "#818CF8", angle: 5*Math.PI/4     },
+  { label: "180 eng",   color: "#6BA3FF", angle: 7*Math.PI/4     },
+];
+const ORBIT_R   = 2.6;  // pillar orbit radius
+const STAT_R    = 1.55; // stat node orbit radius
+
 const AboutCanvas = () => {
-  const mountRef = useRef(null);
+  const mountRef  = useRef(null);
   const canvasRef = useRef(null);
+  const labelRefs = useRef([]);  // 4 pillar HTML labels
+  const statRefs  = useRef([]);  // 4 stat HTML labels
 
   useEffect(() => {
-    const mount = mountRef.current;
+    const mount  = mountRef.current;
     const canvas = canvasRef.current;
     if (!mount || !canvas) return;
-
-    let renderer = null, animId = null, doCleanup = null;
+    let renderer = null, animId = null;
 
     const init = () => {
       if (renderer) return;
-      const W = mount.clientWidth, H = mount.clientHeight;
+      const W = mount.clientWidth  || 400;
+      const H = mount.clientHeight || 400;
+
       renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       renderer.setSize(W, H);
       renderer.setClearColor(0x000000, 0);
-      renderer.shadowMap.enabled = true;
 
       const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(52, W / H, 0.1, 200);
-      camera.position.set(0, 0.5, 7);
+      const cam   = new THREE.PerspectiveCamera(55, W / H, 0.1, 100);
+      cam.position.set(0, 0.8, 6.5);
+      cam.lookAt(0, 0, 0);
 
-      /* ── Lights ── */
-      scene.add(new THREE.AmbientLight(0xffffff, 0.25));
-      const lightsConfig = [
-        { col: 0x818cf8, intensity: 5, dist: 30, pos: [5, 5, 5] },
-        { col: 0xc084fc, intensity: 4, dist: 30, pos: [-5, -3, 4] },
-        { col: 0x67e8f9, intensity: 3, dist: 25, pos: [0, -5, 3] },
-        { col: 0xf472b6, intensity: 3, dist: 22, pos: [4, -2, -3] },
-        { col: 0x34d399, intensity: 2, dist: 20, pos: [-4, 4, -2] },
-      ];
-      const pointLights = lightsConfig.map(l => {
-        const pl = new THREE.PointLight(l.col, l.intensity, l.dist);
-        pl.position.set(...l.pos);
-        scene.add(pl);
-        return pl;
-      });
+      // ── Lights ──────────────────────────────────────────────────────────
+      scene.add(new THREE.AmbientLight(0xd0e8ff, 0.3));
+      const pl1 = new THREE.PointLight(0x4F8EF7, 7, 25); pl1.position.set( 4,  4,  4); scene.add(pl1);
+      const pl2 = new THREE.PointLight(0x38BDF8, 4, 22); pl2.position.set(-4, -3,  3); scene.add(pl2);
+      const pl3 = new THREE.PointLight(0x818CF8, 3, 20); pl3.position.set( 0, -4,  2); scene.add(pl3);
 
-      /* ── Central morphing geometry ── */
-      const morphGroup = new THREE.Group();
-      scene.add(morphGroup);
+      // ── Centre: IsiTech morphing icosahedron ────────────────────────────
+      const coreGeo = new THREE.IcosahedronGeometry(1.0, 2);
+      const origPos = new Float32Array(coreGeo.attributes.position.array);
+      const tmpPos  = new Float32Array(origPos.length);
 
-      const coreGeo = new THREE.IcosahedronGeometry(1.05, 2);
-      // Cache original positions for morphing
-      const origPositions = new Float32Array(coreGeo.attributes.position.array.length);
-      origPositions.set(coreGeo.attributes.position.array);
+      const coreGroup = new THREE.Group();
+      scene.add(coreGroup);
 
-      const coreMat = new THREE.MeshPhongMaterial({
-        color: 0x4f46e5, emissive: 0x1e1b4b, specular: 0xc7d2fe,
-        shininess: 140, transparent: true, opacity: 0.88,
-      });
-      const core = new THREE.Mesh(coreGeo, coreMat);
-      morphGroup.add(core);
-
-      const wireMat = new THREE.MeshBasicMaterial({ color: 0x818cf8, wireframe: true, transparent: true, opacity: 0.22 });
-      const wireCore = new THREE.Mesh(coreGeo, wireMat);
-      wireCore.scale.setScalar(1.02);
-      morphGroup.add(wireCore);
-
-      const innerGlow = new THREE.Mesh(
-        new THREE.SphereGeometry(0.6, 32, 32),
-        new THREE.MeshPhongMaterial({ color: 0x6366f1, emissive: 0x6366f1, emissiveIntensity: 0.8, transparent: true, opacity: 0.4 })
+      coreGroup.add(new THREE.Mesh(coreGeo, new THREE.MeshPhongMaterial({
+        color: 0x030d1a, emissive: 0x060e1e,
+        specular: new THREE.Color("#4F8EF7"), shininess: 280,
+        transparent: true, opacity: 0.97,
+      })));
+      const wireMesh = new THREE.Mesh(coreGeo, new THREE.MeshBasicMaterial({
+        color: 0x4F8EF7, wireframe: true, transparent: true, opacity: 0.18,
+      }));
+      wireMesh.scale.setScalar(1.015);
+      coreGroup.add(wireMesh);
+      const igMesh = new THREE.Mesh(
+        new THREE.SphereGeometry(0.48, 32, 32),
+        new THREE.MeshPhongMaterial({ color: 0x4F8EF7, emissive: 0x4F8EF7, emissiveIntensity: 0.9, transparent: true, opacity: 0.22 })
       );
-      morphGroup.add(innerGlow);
+      coreGroup.add(igMesh);
 
-      /* ── DNA Double Helix ── */
-      const helixGroup = new THREE.Group();
-      scene.add(helixGroup);
+      // ── Connector ring around centre ─────────────────────────────────────
+      const connRing = new THREE.Mesh(
+        new THREE.TorusGeometry(ORBIT_R, 0.012, 12, 120),
+        new THREE.MeshBasicMaterial({ color: 0x4F8EF7, transparent: true, opacity: 0.18 })
+      );
+      connRing.rotation.x = Math.PI / 2;
+      scene.add(connRing);
 
-      const nodeCount = 14;
-      const helixRadius = 1.3;
-      const helixHeight = 5.0;
-      const strand1Pts = [], strand2Pts = [];
-
-      const nodeMat = (col) => new THREE.MeshPhongMaterial({
-        color: col, emissive: col, emissiveIntensity: 0.35, shininess: 200,
+      // Tilted accent rings
+      [
+        { r: ORBIT_R * 0.65, op: 0.12, rx: Math.PI/2.2, rz: 0.4 },
+        { r: ORBIT_R * 1.18, op: 0.08, rx: Math.PI/3,   rz: -0.6 },
+      ].forEach(d => {
+        const m = new THREE.Mesh(
+          new THREE.TorusGeometry(d.r, 0.008, 10, 90),
+          new THREE.MeshBasicMaterial({ color: 0x38BDF8, transparent: true, opacity: d.op })
+        );
+        m.rotation.x = d.rx; m.rotation.z = d.rz;
+        scene.add(m);
       });
 
-      for (let i = 0; i < nodeCount; i++) {
-        const t = (i / (nodeCount - 1)) * Math.PI * 3 - Math.PI * 1.5;
-        const y = (i / (nodeCount - 1)) * helixHeight - helixHeight / 2;
-        const isCentral = i === Math.floor(nodeCount / 2);
-        const r = isCentral ? 0.24 : 0.14;
-
-        const c1 = [0x818cf8, 0x6366f1, 0xa78bfa, 0xc084fc, 0x8b5cf6][i % 5];
-        const s1 = new THREE.Mesh(new THREE.SphereGeometry(r, 20, 20), nodeMat(c1));
-        s1.position.set(Math.cos(t) * helixRadius, y, Math.sin(t) * helixRadius);
-        helixGroup.add(s1);
-        strand1Pts.push(s1.position.clone());
-
-        const c2 = [0x67e8f9, 0x06b6d4, 0x34d399, 0x10b981, 0x22d3ee][i % 5];
-        const s2 = new THREE.Mesh(new THREE.SphereGeometry(0.13, 20, 20), nodeMat(c2));
-        s2.position.set(Math.cos(t + Math.PI) * helixRadius, y, Math.sin(t + Math.PI) * helixRadius);
-        helixGroup.add(s2);
-        strand2Pts.push(s2.position.clone());
-
-        if (i % 2 === 0) {
-          const p1 = s1.position.clone(), p2 = s2.position.clone();
-          const mid = p1.clone().lerp(p2, 0.5);
-          const len = p1.distanceTo(p2);
-          const rod = new THREE.Mesh(
-            new THREE.CylinderGeometry(0.022, 0.022, len, 8),
-            new THREE.MeshPhongMaterial({ color: 0xc7d2fe, transparent: true, opacity: 0.35, shininess: 200 })
-          );
-          rod.position.copy(mid);
-          rod.quaternion.setFromUnitVectors(
-            new THREE.Vector3(0, 1, 0),
-            p2.clone().sub(p1).normalize()
-          );
-          helixGroup.add(rod);
-        }
-      }
-
-      const makeTube = (pts, col, emissive) => {
-        const curve = new THREE.CatmullRomCurve3(pts);
-        return new THREE.Mesh(
-          new THREE.TubeGeometry(curve, 80, 0.032, 10, false),
-          new THREE.MeshPhongMaterial({ color: col, emissive: emissive, transparent: true, opacity: 0.6, shininess: 220 })
+      // ── Pillar nodes (4 orbiting spheres) ──────────────────────────────
+      const pillarMeshes = PILLARS.map(p => {
+        const node = new THREE.Mesh(
+          new THREE.SphereGeometry(0.28, 24, 24),
+          new THREE.MeshPhongMaterial({
+            color: p.hex, emissive: p.hex, emissiveIntensity: 0.45, shininess: 260,
+          })
         );
-      };
-      helixGroup.add(makeTube(strand1Pts, 0x818cf8, 0x312e81));
-      helixGroup.add(makeTube(strand2Pts, 0x67e8f9, 0x0e7490));
-      helixGroup.position.set(2.2, 0, -0.5);
+        // inner glow ring
+        const ring = new THREE.Mesh(
+          new THREE.TorusGeometry(0.38, 0.018, 10, 60),
+          new THREE.MeshBasicMaterial({ color: p.hex, transparent: true, opacity: 0.5 })
+        );
+        node.add(ring);
+        scene.add(node);
+        return node;
+      });
 
-      /* ── Orbital rings ── */
-      const ringsConfig = [
-        { r: 2.4, tube: 0.038, col: 0x818cf8, emissive: 0x312e81, rotX: Math.PI / 2.5, rotZ: 0.3,           opacity: 0.8 },
-        { r: 2.9, tube: 0.025, col: 0xc084fc, emissive: 0x581c87, rotX: Math.PI / 4,   rotZ: Math.PI / 6,   opacity: 0.6 },
-        { r: 3.4, tube: 0.018, col: 0x67e8f9, emissive: 0x0e7490, rotX: Math.PI / 6,   rotZ: -Math.PI / 5,  opacity: 0.45 },
-      ];
-      const ringMeshes = ringsConfig.map(r => {
+      // Lines from centre to each pillar
+      const connLines = PILLARS.map(p => {
+        const pts = [new THREE.Vector3(0,0,0), new THREE.Vector3(1,0,0)];
+        const geo = new THREE.BufferGeometry().setFromPoints(pts);
+        const line = new THREE.Line(geo, new THREE.LineBasicMaterial({
+          color: p.hex, transparent: true, opacity: 0.35,
+        }));
+        scene.add(line);
+        return line;
+      });
+
+      // ── Stat mini-nodes (inner orbit) ───────────────────────────────────
+      const statMeshes = STAT_NODES.map(s => {
         const m = new THREE.Mesh(
-          new THREE.TorusGeometry(r.r, r.tube, 16, 140),
-          new THREE.MeshPhongMaterial({ color: r.col, emissive: r.emissive, specular: 0xffffff, shininess: 240, transparent: true, opacity: r.opacity })
+          new THREE.SphereGeometry(0.13, 16, 16),
+          new THREE.MeshPhongMaterial({ color: s.color, emissive: s.color, emissiveIntensity: 0.6, shininess: 220 })
         );
-        m.rotation.x = r.rotX;
-        m.rotation.z = r.rotZ;
         scene.add(m);
         return m;
       });
 
-      /* ── Satellites ── */
-      const satConfigs = [
-        { col: 0x818cf8, r: 2.2, speed:  0.55, yOff:  0.4, phase: 0   },
-        { col: 0xf472b6, r: 2.7, speed: -0.38, yOff: -0.6, phase: 1.2 },
-        { col: 0x67e8f9, r: 1.9, speed:  0.72, yOff:  0.9, phase: 2.4 },
-        { col: 0x34d399, r: 3.1, speed: -0.28, yOff: -0.3, phase: 3.6 },
-      ];
-      const sats = satConfigs.map(d => {
-        const mesh = new THREE.Mesh(
-          new THREE.SphereGeometry(0.1, 20, 20),
-          new THREE.MeshPhongMaterial({ color: d.col, emissive: d.col, emissiveIntensity: 0.55, shininess: 240 })
+      // ── Pulse particles (travel from centre → pillar) ───────────────────
+      // 4 pulses, one per pillar, staggered phases
+      const PULSE_COUNT = 4;
+      const pulseMeshes = Array.from({ length: PULSE_COUNT }, (_, i) => {
+        const m = new THREE.Mesh(
+          new THREE.SphereGeometry(0.07, 10, 10),
+          new THREE.MeshPhongMaterial({
+            color: PILLARS[i].hex, emissive: PILLARS[i].hex,
+            emissiveIntensity: 1.0, shininess: 300,
+          })
         );
-        mesh.userData = { ...d, angle: d.phase };
-        scene.add(mesh);
-        const trail = new THREE.Mesh(
-          new THREE.TorusGeometry(0.18, 0.012, 8, 40),
-          new THREE.MeshBasicMaterial({ color: d.col, transparent: true, opacity: 0.4 })
-        );
-        mesh.add(trail);
-        return mesh;
+        m.userData = { pillarIdx: i, phase: i / PULSE_COUNT };
+        scene.add(m);
+        return m;
       });
 
-      /* ── Geometric accents ── */
-      const octahedron = new THREE.Mesh(
-        new THREE.OctahedronGeometry(0.45, 0),
-        new THREE.MeshPhongMaterial({ color: 0xf472b6, emissive: 0x9d174d, shininess: 200, transparent: true, opacity: 0.75 })
-      );
-      octahedron.position.set(-2.5, 1.5, 0.5);
-      scene.add(octahedron);
-
-      const tetrahedron = new THREE.Mesh(
-        new THREE.TetrahedronGeometry(0.38, 0),
-        new THREE.MeshPhongMaterial({ color: 0x34d399, emissive: 0x065f46, shininess: 180, transparent: true, opacity: 0.7 })
-      );
-      tetrahedron.position.set(-2.0, -1.8, -0.3);
-      scene.add(tetrahedron);
-
-      /* ── Energy field lines ── */
-      const fieldLines = [];
-      const lineColors = [0x818cf8, 0xc084fc, 0x67e8f9, 0xf472b6, 0x34d399, 0xa78bfa];
-      for (let i = 0; i < 6; i++) {
-        const pts = [];
-        const angle = (i / 6) * Math.PI * 2;
-        for (let j = 0; j <= 30; j++) {
-          const frac = j / 30;
-          pts.push(new THREE.Vector3(
-            Math.cos(angle + frac * Math.PI) * (1.8 + frac * 0.8),
-            (frac - 0.5) * 4.5,
-            Math.sin(angle + frac * Math.PI) * (1.8 + frac * 0.8)
-          ));
-        }
-        const geo = new THREE.BufferGeometry().setFromPoints(pts);
-        const line = new THREE.Line(geo, new THREE.LineBasicMaterial({
-          color: lineColors[i], transparent: true, opacity: 0.18,
-        }));
-        scene.add(line);
-        fieldLines.push(line);
-      }
-
-      /* ── Particles ── */
-      const pCount = 220;
-      const pPos = new Float32Array(pCount * 3);
+      // ── Ambient particles ────────────────────────────────────────────────
+      const pCount  = 180;
+      const pPos    = new Float32Array(pCount * 3);
       const pColors = new Float32Array(pCount * 3);
-      const palette = [[0.49,0.49,0.97],[0.75,0.51,0.99],[0.40,0.91,0.98],[0.96,0.45,0.71],[0.20,0.83,0.60]];
       for (let i = 0; i < pCount; i++) {
-        const rr = 3.2 + Math.random() * 1.8;
-        const theta = Math.random() * Math.PI * 2;
-        const phi = Math.acos(2 * Math.random() - 1);
-        pPos[i*3]   = rr * Math.sin(phi) * Math.cos(theta);
-        pPos[i*3+1] = rr * Math.sin(phi) * Math.sin(theta);
-        pPos[i*3+2] = rr * Math.cos(phi);
-        const c = palette[i % palette.length];
-        pColors[i*3] = c[0]; pColors[i*3+1] = c[1]; pColors[i*3+2] = c[2];
+        const r = 3.5 + Math.random() * 1.5;
+        const th = Math.random() * Math.PI * 2;
+        const ph = Math.acos(2 * Math.random() - 1);
+        pPos[i*3]   = r * Math.sin(ph) * Math.cos(th);
+        pPos[i*3+1] = r * Math.sin(ph) * Math.sin(th);
+        pPos[i*3+2] = r * Math.cos(ph);
+        pColors[i*3]   = 0.3 + Math.random() * 0.4;
+        pColors[i*3+1] = 0.5 + Math.random() * 0.3;
+        pColors[i*3+2] = 0.9 + Math.random() * 0.1;
       }
       const pGeo = new THREE.BufferGeometry();
       pGeo.setAttribute("position", new THREE.BufferAttribute(pPos, 3));
       pGeo.setAttribute("color",    new THREE.BufferAttribute(pColors, 3));
       const particles = new THREE.Points(pGeo, new THREE.PointsMaterial({
-        size: 0.048, transparent: true, opacity: 0.82, vertexColors: true,
+        size: 0.038, transparent: true, opacity: 0.75, vertexColors: true,
       }));
       scene.add(particles);
 
-      /* ── Mouse interaction ── */
-      let mx = 0, my = 0, targetMx = 0, targetMy = 0;
+      // ── Mouse tilt ────────────────────────────────────────────────────────
+      let tmx = 0, tmy = 0, mx = 0, my = 0;
       const onMove = e => {
-        const touch = e.touches ? e.touches[0] : e;
-        targetMx = (touch.clientX / window.innerWidth  - 0.5) * 2;
-        targetMy = -(touch.clientY / window.innerHeight - 0.5) * 2;
+        const t = e.touches ? e.touches[0] : e;
+        tmx = (t.clientX / window.innerWidth  - 0.5) * 2;
+        tmy = -(t.clientY / window.innerHeight - 0.5) * 2;
       };
-      window.addEventListener("mousemove", onMove);
-      window.addEventListener("touchmove", onMove, { passive: true });
-
       const onResize = () => {
         const nw = mount.clientWidth, nh = mount.clientHeight;
         renderer.setSize(nw, nh);
-        camera.aspect = nw / nh;
-        camera.updateProjectionMatrix();
+        cam.aspect = nw / nh;
+        cam.updateProjectionMatrix();
       };
-      window.addEventListener("resize", onResize);
+      window.addEventListener("mousemove", onMove);
+      window.addEventListener("touchmove", onMove, { passive: true });
+      window.addEventListener("resize",    onResize);
 
-      /* ── Animation loop ── */
+      // ── reusable projection vector ────────────────────────────────────────
+      const v3 = new THREE.Vector3();
       const t0 = performance.now();
-      const posArr = coreGeo.attributes.position.array;
-      const tempPos = new Float32Array(posArr.length);
 
+      // ── Animate ──────────────────────────────────────────────────────────
       const animate = () => {
         animId = requestAnimationFrame(animate);
         const t = (performance.now() - t0) * 0.001;
+        mx += (tmx - mx) * 0.05;
+        my += (tmy - my) * 0.05;
 
-        // Smooth mouse
-        mx += (targetMx - mx) * 0.06;
-        my += (targetMy - my) * 0.06;
+        // Slow scene-wide orbit tilt driven by mouse
+        scene.rotation.y = mx * 0.22;
+        scene.rotation.x = my * 0.12;
 
-        // Morph core — use cached original positions to avoid drift
-        for (let i = 0; i < origPositions.length; i += 3) {
-          const ox = origPositions[i], oy = origPositions[i+1], oz = origPositions[i+2];
-          const len = Math.sqrt(ox*ox + oy*oy + oz*oz);
-          const wave = Math.sin(t * 1.4 + ox * 2.1 + oy * 1.7) * 0.06;
-          const scale = (1.05 + wave) / len;
-          tempPos[i]   = ox * scale;
-          tempPos[i+1] = oy * scale;
-          tempPos[i+2] = oz * scale;
+        // Morph centre sphere
+        for (let i = 0; i < origPos.length; i += 3) {
+          const ox = origPos[i], oy = origPos[i+1], oz = origPos[i+2];
+          const len  = Math.sqrt(ox*ox + oy*oy + oz*oz);
+          const wave = Math.sin(t * 1.3 + ox * 2.0 + oy * 1.6) * 0.05;
+          const sc   = (1.0 + wave) / len;
+          tmpPos[i]=ox*sc; tmpPos[i+1]=oy*sc; tmpPos[i+2]=oz*sc;
         }
-        coreGeo.attributes.position.array.set(tempPos);
+        coreGeo.attributes.position.array.set(tmpPos);
         coreGeo.attributes.position.needsUpdate = true;
         coreGeo.computeVertexNormals();
+        coreGroup.rotation.y = t * 0.18;
+        coreGroup.rotation.z = Math.sin(t * 0.22) * 0.06;
+        igMesh.scale.setScalar(1 + Math.sin(t * 1.9) * 0.12);
 
-        morphGroup.rotation.y = t * 0.22 + mx * 0.35;
-        morphGroup.rotation.x = Math.sin(t * 0.18) * 0.18 + my * 0.2;
-        morphGroup.rotation.z = Math.cos(t * 0.14) * 0.08;
+        // Orbit connector ring slow spin
+        connRing.rotation.z = t * 0.08;
 
-        helixGroup.rotation.y = t * 0.28 + mx * 0.15;
-        helixGroup.rotation.x = Math.sin(t * 0.22) * 0.12 + my * 0.08;
-        const breathe = 1 + Math.sin(t * 0.9) * 0.04;
-        helixGroup.scale.set(breathe, 1, breathe);
+        // Position pillar nodes on orbit ring
+        PILLARS.forEach((p, i) => {
+          const angle = p.angle + t * 0.15;
+          const x = Math.cos(angle) * ORBIT_R;
+          const z = Math.sin(angle) * ORBIT_R;
+          const y = Math.sin(t * 0.6 + i * 1.2) * 0.18;
+          pillarMeshes[i].position.set(x, y, z);
+          pillarMeshes[i].rotation.y = t * 0.5;
 
-        ringMeshes[0].rotation.z = t * 0.22;
-        ringMeshes[1].rotation.x = Math.PI / 4 + t * 0.17;
-        ringMeshes[1].rotation.z = Math.PI / 6 + t * 0.12;
-        ringMeshes[2].rotation.y = t * 0.14;
-        ringMeshes[2].rotation.z = -Math.PI / 5 + t * 0.09;
-
-        sats.forEach(s => {
-          s.userData.angle += s.userData.speed * 0.013;
-          s.position.x = Math.cos(s.userData.angle) * s.userData.r;
-          s.position.z = Math.sin(s.userData.angle) * s.userData.r;
-          s.position.y = s.userData.yOff + Math.sin(t * 1.1 + s.userData.angle) * 0.35;
-          s.rotation.y = t * 2;
+          // Update connector line geometry
+          const pos = connLines[i].geometry.attributes.position;
+          pos.setXYZ(0, 0, 0, 0);
+          pos.setXYZ(1, x, y, z);
+          pos.needsUpdate = true;
         });
 
-        octahedron.rotation.x = t * 0.5;
-        octahedron.rotation.y = t * 0.7;
-        octahedron.position.y = 1.5 + Math.sin(t * 0.8) * 0.3;
-        tetrahedron.rotation.x = -t * 0.6;
-        tetrahedron.rotation.z = t * 0.4;
-        tetrahedron.position.y = -1.8 + Math.cos(t * 0.7) * 0.25;
+        // Stat mini-nodes orbit slightly inside, offset angle
+        STAT_NODES.forEach((s, i) => {
+          const angle = s.angle + t * 0.22;
+          statMeshes[i].position.set(
+            Math.cos(angle) * STAT_R,
+            Math.sin(t * 0.8 + i) * 0.12,
+            Math.sin(angle) * STAT_R
+          );
+        });
 
-        fieldLines.forEach((l, i) => { l.rotation.y = t * (0.05 + i * 0.012); });
+        // Pulse particles travel centre → pillar target
+        pulseMeshes.forEach(pm => {
+          const pi  = pm.userData.pillarIdx;
+          // advance phase 0→1 over ~2s, reset
+          pm.userData.phase = (pm.userData.phase + 0.004) % 1;
+          const f   = pm.userData.phase;
+          const target = pillarMeshes[pi].position;
+          pm.position.set(
+            target.x * f,
+            target.y * f,
+            target.z * f
+          );
+          // fade in then out
+          const op = f < 0.5 ? f * 2 : (1 - f) * 2;
+          pm.material.opacity = op;
+          pm.material.transparent = true;
+          pm.scale.setScalar(0.5 + op * 0.8);
+        });
 
-        particles.rotation.y = t * 0.035;
-        particles.rotation.x = t * 0.018;
+        particles.rotation.y = t * 0.025;
+        pl1.position.set(Math.sin(t*0.4)*5, Math.cos(t*0.3)*4, 4);
+        pl2.position.set(Math.cos(t*0.28)*-5, Math.sin(t*0.44)*-3, 3);
 
-        innerGlow.scale.setScalar(1 + Math.sin(t * 1.8) * 0.15);
+        renderer.render(scene, cam);
 
-        pointLights[0].position.set(Math.sin(t * 0.42) * 6,  Math.cos(t * 0.35) * 5,  5);
-        pointLights[1].position.set(Math.cos(t * 0.31) * -6, Math.sin(t * 0.48) * -4, 4);
-        pointLights[3].position.set(Math.sin(t * 0.55) * 5,  -2, Math.cos(t * 0.38) * -4);
-        pointLights[4].position.set(Math.cos(t * 0.27) * -4, Math.sin(t * 0.33) * 4,  -3);
+        // ── Project pillar & stat nodes to screen for HTML labels ───────────
+        const cW = canvas.clientWidth, cH = canvas.clientHeight;
+        cam.updateMatrixWorld();
 
-        renderer.render(scene, camera);
+        PILLARS.forEach((_, i) => {
+          const el = labelRefs.current[i];
+          if (!el) return;
+          v3.copy(pillarMeshes[i].position).applyEuler(scene.rotation).project(cam);
+          const sx = ( v3.x * 0.5 + 0.5) * cW;
+          const sy = (-v3.y * 0.5 + 0.5) * cH;
+          const depth = (v3.z + 1) * 0.5;
+          const sc    = Math.max(0.7, Math.min(1.05, 1.1 - depth * 0.35));
+          const op    = Math.max(0.4, Math.min(1, 1.2 - depth * 0.7));
+          el.style.left      = (sx - 56) + "px";
+          el.style.top       = (sy + 18) + "px";
+          el.style.transform = `scale(${sc.toFixed(3)})`;
+          el.style.opacity   = op.toFixed(3);
+          el.style.visibility = v3.z > 1 ? "hidden" : "visible";
+        });
+
+        STAT_NODES.forEach((_, i) => {
+          const el = statRefs.current[i];
+          if (!el) return;
+          v3.copy(statMeshes[i].position).applyEuler(scene.rotation).project(cam);
+          const sx = ( v3.x * 0.5 + 0.5) * cW;
+          const sy = (-v3.y * 0.5 + 0.5) * cH;
+          el.style.left       = (sx - 22) + "px";
+          el.style.top        = (sy - 10) + "px";
+          el.style.visibility = v3.z > 1 ? "hidden" : "visible";
+        });
       };
       animate();
 
-      doCleanup = () => {
+      return () => {
         cancelAnimationFrame(animId);
         window.removeEventListener("mousemove", onMove);
         window.removeEventListener("touchmove", onMove);
-        window.removeEventListener("resize", onResize);
-        if (renderer) { renderer.dispose(); renderer = null; }
+        window.removeEventListener("resize",    onResize);
+        renderer.dispose();
+        renderer = null;
       };
     };
 
+    let doCleanup = null;
     const obs = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting) { init(); }
-      else { if (doCleanup) { doCleanup(); doCleanup = null; } }
+      if (e.isIntersecting && !doCleanup) doCleanup = init();
+      else if (!e.isIntersecting && doCleanup) { doCleanup(); doCleanup = null; }
     }, { threshold: 0.01 });
     obs.observe(canvas);
-    return () => { obs.disconnect(); if (doCleanup) doCleanup(); };
+    return () => { obs.disconnect(); doCleanup?.(); };
   }, []);
 
   return (
     <div ref={mountRef} style={{ width: "100%", height: "100%", position: "relative" }}>
       <canvas ref={canvasRef} style={{ width: "100%", height: "100%", display: "block" }} />
+
+      {/* IsiTech centre label */}
+      <div style={{
+        position: "absolute", top: "50%", left: "50%",
+        transform: "translate(-50%, -60px)",
+        textAlign: "center", pointerEvents: "none", zIndex: 10,
+      }}>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.18em", color: "#4F8EF7", textTransform: "uppercase", fontFamily: "'Sora',sans-serif", textShadow: "0 0 12px #4F8EF7" }}>IsiTech</div>
+        <div style={{ fontSize: 8.5, fontWeight: 600, letterSpacing: "0.14em", color: "rgba(200,213,240,0.55)", textTransform: "uppercase", fontFamily: "'DM Sans',sans-serif" }}>Innovations</div>
+      </div>
+
+      {/* Pillar HTML labels — positioned by JS each frame */}
+      <div style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "visible" }}>
+        {PILLARS.map((p, i) => (
+          <div
+            key={p.label}
+            ref={el => { labelRefs.current[i] = el; }}
+            style={{
+              position: "absolute", width: 112, textAlign: "center",
+              visibility: "hidden",
+              transition: "opacity 0.08s linear",
+            }}
+          >
+            <div style={{
+              background: "rgba(8,10,15,0.88)",
+              border: `1px solid ${p.color}55`,
+              borderRadius: 8, padding: "5px 10px",
+              backdropFilter: "blur(10px)",
+              display: "inline-block",
+            }}>
+              <div style={{ fontSize: 10, fontWeight: 800, color: p.color, letterSpacing: "0.06em", textTransform: "uppercase", fontFamily: "'Sora',sans-serif", whiteSpace: "nowrap" }}>{p.label}</div>
+              <div style={{ fontSize: 9, color: "rgba(200,213,240,0.6)", fontFamily: "'DM Sans',sans-serif", whiteSpace: "nowrap" }}>{p.sub}</div>
+            </div>
+          </div>
+        ))}
+
+        {/* Stat mini-node labels */}
+        {STAT_NODES.map((s, i) => (
+          <div
+            key={s.label}
+            ref={el => { statRefs.current[i] = el; }}
+            style={{
+              position: "absolute", visibility: "hidden",
+              background: "rgba(8,10,15,0.82)",
+              border: `1px solid ${s.color}40`,
+              borderRadius: 5, padding: "2px 7px",
+              backdropFilter: "blur(8px)",
+              fontSize: 9, fontWeight: 700,
+              color: s.color, fontFamily: "'DM Sans',sans-serif",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {s.label}
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
 
-/* ════════════════════════════════════════════
-   STAT CARD
-════════════════════════════════════════════ */
-const StatCard = ({ stat, active }) => {
+/* ─── Hex Background (same as Hero) ─────────────────────────────────── */
+const HexPattern = () => (
+  <svg aria-hidden="true" style={{ position:"absolute",inset:0,width:"100%",height:"100%",zIndex:0,pointerEvents:"none",opacity:0.04 }}>
+    <defs>
+      <pattern id="ab_hex1" x="0" y="0" width="60" height="69.28" patternUnits="userSpaceOnUse">
+        <polygon points="30,0 60,17.32 60,51.96 30,69.28 0,51.96 0,17.32" fill="none" stroke="#4F8EF7" strokeWidth="0.8"/>
+      </pattern>
+      <pattern id="ab_hex2" x="30" y="34.64" width="60" height="69.28" patternUnits="userSpaceOnUse">
+        <polygon points="30,0 60,17.32 60,51.96 30,69.28 0,51.96 0,17.32" fill="none" stroke="#38BDF8" strokeWidth="0.5" opacity="0.5"/>
+      </pattern>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#ab_hex1)"/>
+    <rect width="100%" height="100%" fill="url(#ab_hex2)"/>
+  </svg>
+);
+
+/* ─── Divider (same as Hero) ─────────────────────────────────────────── */
+const Divider = () => (
+  <div style={{ display:"flex",alignItems:"center",gap:10,margin:"2px 0" }}>
+    <div style={{ flex:1,height:1,background:`linear-gradient(90deg,transparent,${C.o1}45)` }}/>
+    <div style={{ width:5,height:5,background:C.o1,transform:"rotate(45deg)",flexShrink:0,boxShadow:`0 0 7px ${C.o1}` }}/>
+    <div style={{ flex:1,height:1,background:`linear-gradient(90deg,${C.o1}45,transparent)` }}/>
+  </div>
+);
+
+/* ─── Stat Card (same structure as Hero StatCard) ────────────────────── */
+const StatCard = ({ stat, active, index }) => {
   const [hov, setHov] = useState(false);
   const display = useCounter(stat.value, 1800, active);
   return (
@@ -419,50 +512,35 @@ const StatCard = ({ stat, active }) => {
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
       style={{
-        flex: "1 1 100px",
-        minWidth: 90,
-        padding: "clamp(12px,2vw,20px) clamp(10px,1.5vw,18px)",
-        borderRadius: 18,
-        background: hov
-          ? `linear-gradient(135deg, ${stat.color}28 0%, ${stat.color}0e 100%)`
-          : "linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))",
-        border: hov ? `1px solid ${stat.color}70` : "1px solid rgba(255,255,255,0.09)",
-        backdropFilter: "blur(18px)",
+        flex:"1 1 100px", minWidth:90,
+        padding:"clamp(12px,2vw,20px) clamp(10px,1.5vw,16px)",
+        borderRadius:14,
+        background: hov ? C.bg3 : C.bg2,
+        border: hov ? `1px solid ${stat.color}55` : "1px solid rgba(255,255,255,0.06)",
+        transform: hov ? "translateY(-6px) scale(1.04)" : "none",
+        transition:"all 0.26s cubic-bezier(0.23,1,0.32,1)",
+        cursor:"default", position:"relative", overflow:"hidden",
+        textAlign:"center",
         boxShadow: hov
-          ? `0 0 36px ${stat.color}28, inset 0 1px 0 rgba(255,255,255,0.12)`
-          : "0 2px 18px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
-        transform: hov ? "translateY(-6px) scale(1.04)" : "translateY(0) scale(1)",
-        transition: "all 0.35s cubic-bezier(0.23,1,0.32,1)",
-        cursor: "default",
-        position: "relative",
-        overflow: "hidden",
-        textAlign: "center",
+          ? `0 16px 48px rgba(0,0,0,0.7),0 0 0 1px ${stat.color}20,inset 0 1px 0 rgba(255,255,255,0.05)`
+          : `0 2px 12px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,255,255,0.025)`,
+        animation:`ab_fadeUp 0.6s ease both ${0.55 + index * 0.1}s`,
       }}
     >
-      <div style={{ position:"absolute",top:0,left:0,right:0,height:1,background:`linear-gradient(90deg,transparent,${stat.color}60,transparent)` }} />
-      <div style={{ position:"absolute",top:0,right:0,width:40,height:40,background:`radial-gradient(circle at top right,${stat.color}35,transparent 70%)`,borderRadius:"0 18px 0 0" }} />
-      <div style={{
-        fontSize: "clamp(1.3rem,3vw,2rem)",
-        fontFamily: "'Syne', sans-serif",
-        fontWeight: 900,
-        letterSpacing: "-0.02em",
-        lineHeight: 1,
-        marginBottom: 5,
-        background: `linear-gradient(135deg, #e0e7ff 0%, ${stat.color} 100%)`,
-        WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
-      }}>
+      <div style={{ position:"absolute",top:0,left:0,right:0,height:2,background:`linear-gradient(90deg,transparent,${stat.color},transparent)` }}/>
+      <div style={{ position:"absolute",top:0,right:0,width:40,height:40,background:`radial-gradient(circle at top right,${stat.color}22,transparent 70%)`,borderRadius:"0 14px 0 0" }}/>
+      {hov && <div style={{ position:"absolute",inset:0,background:`radial-gradient(circle at 50% 0%,${stat.color}0e,transparent 70%)` }}/>}
+      <div style={{ fontSize:"clamp(1.1rem,2.6vw,2rem)",fontWeight:800,lineHeight:1,marginBottom:5,color:C.tw,position:"relative",fontFamily:"'Sora',sans-serif",fontVariantNumeric:"tabular-nums",filter:`drop-shadow(0 0 6px ${stat.color}45)` }}>
         {display}
       </div>
-      <div style={{ color: "rgba(199,210,254,0.6)", fontSize: "clamp(9px,1.2vw,11px)", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase" }}>
+      <div style={{ color:C.tm,fontSize:"clamp(8px,0.95vw,10.5px)",fontWeight:600,letterSpacing:"0.1em",textTransform:"uppercase",lineHeight:1.4,position:"relative" }}>
         {stat.label}
       </div>
     </div>
   );
 };
 
-/* ════════════════════════════════════════════
-   HIGHLIGHT CARD
-════════════════════════════════════════════ */
+/* ─── Highlight Card ─────────────────────────────────────────────────── */
 const HighlightCard = ({ item, index, visible }) => {
   const [hov, setHov] = useState(false);
   return (
@@ -470,490 +548,400 @@ const HighlightCard = ({ item, index, visible }) => {
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
       style={{
-        display: "flex",
-        alignItems: "flex-start",
-        gap: 12,
-        padding: "14px 16px",
-        borderRadius: 16,
-        background: hov ? "rgba(99,102,241,0.12)" : "rgba(255,255,255,0.03)",
-        border: hov ? "1px solid rgba(129,140,248,0.4)" : "1px solid rgba(255,255,255,0.07)",
-        transition: "all 0.3s cubic-bezier(0.23,1,0.32,1)",
+        display:"flex", alignItems:"flex-start", gap:12,
+        padding:"13px 15px", borderRadius:12,
+        background: hov ? `rgba(79,142,247,0.10)` : C.bg2,
+        border: hov ? `1px solid ${C.o1}45` : "1px solid rgba(255,255,255,0.06)",
+        transition:"all 0.26s cubic-bezier(0.23,1,0.32,1)",
         transform: hov ? "translateX(4px)" : "translateX(0)",
-        cursor: "default",
-        animation: visible ? `ab_fadeUp 0.6s ease both ${0.4 + index * 0.08}s` : "none",
+        cursor:"default",
+        animation: visible ? `ab_fadeUp 0.6s ease both ${0.45 + index * 0.08}s` : "none",
         opacity: visible ? 1 : 0,
       }}
     >
       <div style={{
-        width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-        background: "linear-gradient(135deg, rgba(99,102,241,0.3), rgba(168,85,247,0.2))",
-        border: "1px solid rgba(129,140,248,0.3)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        fontSize: 16, color: "#818cf8",
-        boxShadow: hov ? "0 0 16px rgba(129,140,248,0.3)" : "none",
-        transition: "box-shadow 0.3s ease",
+        width:36,height:36,borderRadius:9,flexShrink:0,
+        background:`rgba(79,142,247,0.12)`,
+        border:`1px solid ${C.o1}35`,
+        display:"flex",alignItems:"center",justifyContent:"center",
+        fontSize:16,color:C.o1,
+        boxShadow: hov ? `0 0 14px ${C.o1}35` : "none",
+        transition:"box-shadow 0.26s ease",
       }}>
         {item.icon}
       </div>
       <div>
-        <div style={{ color: "#e0e7ff", fontSize: 13, fontWeight: 700, marginBottom: 2 }}>{item.label}</div>
-        <div style={{ color: "rgba(165,180,252,0.55)", fontSize: 11 }}>{item.desc}</div>
+        <div style={{ color:C.ts,fontSize:13,fontWeight:700,marginBottom:2 }}>{item.label}</div>
+        <div style={{ color:C.tm,fontSize:11,lineHeight:1.4 }}>{item.desc}</div>
       </div>
     </div>
   );
 };
 
-/* ════════════════════════════════════════════
-   CANVAS COLUMN — extracted for reuse of order
-════════════════════════════════════════════ */
+/* ─── CTA Button (same as Hero CTAButton) ────────────────────────────── */
+const CTAButton = ({ label, href, primary, onClick }) => {
+  const [hov, setHov] = useState(false);
+  return (
+    <button
+      onClick={() => onClick(href)}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        position:"relative", overflow:"hidden",
+        padding:"13px clamp(20px,3vw,32px)",
+        borderRadius:9, fontWeight:700,
+        fontSize:"clamp(12px,1.35vw,13.5px)",
+        letterSpacing:"0.07em", cursor:"pointer",
+        transform: hov ? "translateY(-2px) scale(1.03)" : "none",
+        transition:"all 0.22s cubic-bezier(0.23,1,0.32,1)",
+        outline:"none", textTransform:"uppercase",
+        fontFamily:"'DM Sans',sans-serif",
+        ...(primary ? {
+          background: hov
+            ? `linear-gradient(135deg,${C.o2},${C.o1})`
+            : `linear-gradient(135deg,${C.o1},${C.o4})`,
+          border:"none", color:"#fff",
+          boxShadow: hov
+            ? `0 14px 42px rgba(79,142,247,0.55),0 0 0 1px rgba(79,142,247,0.4)`
+            : `0 6px 22px rgba(79,142,247,0.32)`,
+        } : {
+          background: hov ? "rgba(79,142,247,0.10)" : "transparent",
+          border:`1.5px solid rgba(79,142,247,0.38)`,
+          color:C.o1,
+          boxShadow: hov ? "0 6px 20px rgba(79,142,247,0.18)" : "none",
+        }),
+      }}
+    >
+      {hov && primary && (
+        <span style={{ position:"absolute",top:0,left:0,bottom:0,width:"38%",background:"linear-gradient(90deg,transparent,rgba(255,255,255,0.18),transparent)",animation:"ab_shimmerBtn 0.65s ease forwards",pointerEvents:"none" }}/>
+      )}
+      {primary && <span style={{ marginRight:8,display:"inline-block",animation:"ab_arrowPulse 2s ease-in-out infinite" }}>→</span>}
+      {label}
+    </button>
+  );
+};
+
+/* ─── Canvas Card with Hero-style chrome ─────────────────────────────── */
 const CanvasColumn = ({ visible }) => (
   <div
     className="ab-canvas-col"
     style={{ animation: visible ? "ab_fadeLeft 0.9s ease both 0.15s" : "none", opacity: visible ? 1 : 0 }}
   >
-    {/* Rotating conic border */}
-    <div style={{ position:"absolute",inset:-2,borderRadius:30,zIndex:0,overflow:"hidden" }}>
-      <div className="ab-rotating-border" />
+    {/* Rotating conic border — same as Hero */}
+    <div style={{ position:"absolute",inset:-2,borderRadius:20,zIndex:0,overflow:"hidden",pointerEvents:"none" }}>
+      <div style={{ position:"absolute",inset:-2,borderRadius:22,background:`conic-gradient(from 0deg,transparent 0%,rgba(79,142,247,0.38) 20%,rgba(56,189,248,0.65) 40%,rgba(79,142,247,0.38) 60%,transparent 80%)`,animation:"ab_borderRot 11s linear infinite" }}/>
     </div>
 
     <div className="ab-canvas-card" style={{ position:"relative",zIndex:1 }}>
-      {/* Inner glow */}
-      <div style={{ position:"absolute",inset:"12%",borderRadius:"50%",background:"radial-gradient(ellipse,rgba(99,102,241,0.28) 0%,rgba(168,85,247,0.12) 40%,transparent 70%)",filter:"blur(28px)",zIndex:0 }}/>
+      {/* Inner radial glow */}
+      <div style={{ position:"absolute",inset:"10%",borderRadius:"50%",background:"radial-gradient(ellipse,rgba(79,142,247,0.20) 0%,rgba(56,189,248,0.06) 40%,transparent 70%)",filter:"blur(30px)",zIndex:0 }}/>
 
-      {/* Corner accents */}
+      {/* Scan line — same as Hero */}
+      <div style={{ position:"absolute",inset:0,zIndex:6,overflow:"hidden",pointerEvents:"none",borderRadius:18 }}>
+        <div style={{ position:"absolute",left:0,right:0,height:1,background:`linear-gradient(90deg,transparent,rgba(79,142,247,0.65),transparent)`,animation:"ab_scanDown 5.5s linear infinite",opacity:0.5 }}/>
+      </div>
+
+      {/* Corner brackets — same as Hero */}
       {[
-        { top:12,  left:12,  borderTop:"2px solid rgba(129,140,248,0.5)", borderLeft:"2px solid rgba(129,140,248,0.5)" },
-        { top:12,  right:12, borderTop:"2px solid rgba(192,132,252,0.5)", borderRight:"2px solid rgba(192,132,252,0.5)" },
-        { bottom:12, left:12,  borderBottom:"2px solid rgba(103,232,249,0.5)", borderLeft:"2px solid rgba(103,232,249,0.5)" },
-        { bottom:12, right:12, borderBottom:"2px solid rgba(244,114,182,0.5)", borderRight:"2px solid rgba(244,114,182,0.5)" },
-      ].map((s, i) => (
-        <div key={i} style={{ position:"absolute",width:20,height:20,zIndex:5,...s }}/>
+        { top:12,left:12,   borderTop:`2px solid ${C.o1}90`,   borderLeft:`2px solid ${C.o1}90`   },
+        { top:12,right:12,  borderTop:`2px solid ${C.accent}90`,borderRight:`2px solid ${C.accent}90` },
+        { bottom:12,left:12, borderBottom:`2px solid ${C.accentAlt}90`,borderLeft:`2px solid ${C.accentAlt}90` },
+        { bottom:12,right:12,borderBottom:`2px solid ${C.o1}90`, borderRight:`2px solid ${C.o1}90` },
+      ].map((s,i) => (
+        <div key={i} aria-hidden="true" style={{ position:"absolute",width:22,height:22,zIndex:7,...s }}/>
       ))}
 
-      {/* Live badge */}
-      <div style={{ position:"absolute",top:16,left:16,zIndex:6,display:"flex",alignItems:"center",gap:6,padding:"5px 12px",borderRadius:100,background:"rgba(5,7,20,0.75)",backdropFilter:"blur(12px)",border:"1px solid rgba(129,140,248,0.28)" }}>
-        <span style={{ width:6,height:6,borderRadius:"50%",background:"#34d399",boxShadow:"0 0 8px #34d399",animation:"ab_pulse 2s ease-in-out infinite",display:"inline-block" }}/>
-        <span style={{ color:"#a5b4fc",fontSize:9,fontWeight:700,letterSpacing:"0.18em",textTransform:"uppercase" }}>Live 3D Engine</span>
+      {/* Live badge — same style as Hero */}
+      <div style={{ position:"absolute",top:14,left:14,zIndex:8,display:"flex",alignItems:"center",gap:6,padding:"5px 12px",borderRadius:7,background:"rgba(8,10,15,0.92)",backdropFilter:"blur(14px)",border:`1px solid rgba(79,142,247,0.35)` }}>
+        <span style={{ width:6,height:6,borderRadius:"50%",background:C.o1,boxShadow:`0 0 9px ${C.o1}`,animation:"ab_pulse 2s ease-in-out infinite",display:"inline-block",flexShrink:0 }}/>
+        <span style={{ color:C.o1,fontSize:9,fontWeight:700,letterSpacing:"0.18em",textTransform:"uppercase" }}>Live 3D</span>
       </div>
 
       {/* Bottom label */}
-      <div style={{ position:"absolute",bottom:16,left:"50%",transform:"translateX(-50%)",zIndex:6,display:"flex",alignItems:"center",gap:6,padding:"6px 14px",borderRadius:100,background:"rgba(5,7,20,0.75)",backdropFilter:"blur(12px)",border:"1px solid rgba(129,140,248,0.28)",whiteSpace:"nowrap" }}>
-        <span style={{ width:5,height:5,borderRadius:"50%",background:"#818cf8",boxShadow:"0 0 8px #818cf8",animation:"ab_blink 2s ease-in-out infinite",display:"inline-block" }}/>
-        <span style={{ color:"#a5b4fc",fontSize:10,fontWeight:700,letterSpacing:"0.14em",textTransform:"uppercase" }}>Digital Innovation Engine</span>
+      <div style={{ position:"absolute",bottom:14,right:14,zIndex:8,padding:"4px 10px",borderRadius:7,background:"rgba(8,10,15,0.82)",backdropFilter:"blur(10px)",border:"1px solid rgba(255,255,255,0.07)" }}>
+        <span style={{ color:C.tf,fontSize:9,fontWeight:600,letterSpacing:"0.1em" }}>DRAG TO INTERACT</span>
       </div>
 
-      <AboutCanvas />
+      <AboutCanvas/>
     </div>
   </div>
 );
 
-/* ════════════════════════════════════════════
-   ABOUT SECTION
-════════════════════════════════════════════ */
+/* ─── Main About Section ─────────────────────────────────────────────── */
 const About = () => {
-  const { ref: sectionRef, visible } = useInView(0.1);
-  const [hovCta1, setHovCta1] = useState(false);
-  const [hovCta2, setHovCta2] = useState(false);
+  const { ref: sectionRef, visible } = useInView(0.08);
   const [activeTab, setActiveTab] = useState(0);
 
-  const handleNav = useCallback((href) => {
-    const el = document.querySelector(href);
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  const handleNav = useCallback(href => {
+    document.querySelector(href)?.scrollIntoView({ behavior:"smooth", block:"start" });
   }, []);
-
-  const tabs = ["Our Story", "Our Values", "Our Process"];
-  const tabContent = [
-    "Founded on the belief that technology should empower people, IsiTech Innovations has grown from a small creative studio to a full-service digital agency trusted by brands across 30+ countries. Every engagement starts with deep listening and ends with measurable impact.",
-    "We operate on four pillars: radical transparency, relentless innovation, human-centered design, and outcome-driven execution. These aren't buzzwords — they're the standards we hold ourselves to on every project, every day.",
-    "Discovery → Strategy → Design → Build → Launch → Optimize. Our six-phase process ensures nothing is left to chance. Each phase has defined deliverables, clear milestones, and regular client checkpoints so you're always in control.",
-  ];
 
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap');
+        *,*::before,*::after{box-sizing:border-box;}
 
-        @keyframes ab_fadeUp    { from{opacity:0;transform:translateY(28px)}  to{opacity:1;transform:translateY(0)} }
-        @keyframes ab_fadeLeft  { from{opacity:0;transform:translateX(-36px)} to{opacity:1;transform:translateX(0)} }
-        @keyframes ab_fadeRight { from{opacity:0;transform:translateX(36px)}  to{opacity:1;transform:translateX(0)} }
-        @keyframes ab_float1    { 0%,100%{transform:translateY(0) rotate(0deg)} 33%{transform:translateY(-14px) rotate(4deg)} 66%{transform:translateY(-6px) rotate(-3deg)} }
-        @keyframes ab_float2    { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-18px) rotate(-5deg)} }
-        @keyframes ab_spin      { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-        @keyframes ab_blink     { 0%,49%,100%{opacity:1} 50%,99%{opacity:0} }
-        @keyframes ab_gridMove  { from{transform:translateY(0)} to{transform:translateY(50px)} }
-        @keyframes ab_pulse     { 0%,100%{transform:scale(1);opacity:.9} 50%{transform:scale(1.15);opacity:1} }
-        @keyframes ab_shimmer   { 0%{transform:translateX(-100%)} 100%{transform:translateX(200%)} }
-        @keyframes ab_arrowPulse{ 0%,100%{transform:translateX(0)} 50%{transform:translateX(5px)} }
-        @keyframes ab_glow      { 0%,100%{box-shadow:0 0 20px rgba(99,102,241,0.2)} 50%{box-shadow:0 0 40px rgba(168,85,247,0.45)} }
-        @keyframes ab_borderRot { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-        @keyframes ab_scanline  { 0%{transform:translateY(-100%)} 100%{transform:translateY(100vh)} }
+        /* ── Keyframes (prefixed ab_ to avoid Hero conflicts) ── */
+        @keyframes ab_fadeUp    {from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes ab_fadeLeft  {from{opacity:0;transform:translateX(-36px)}to{opacity:1;transform:translateX(0)}}
+        @keyframes ab_fadeRight {from{opacity:0;transform:translateX(36px)}to{opacity:1;transform:translateX(0)}}
+        @keyframes ab_float1    {0%,100%{transform:translateY(0) rotate(0deg)}33%{transform:translateY(-13px) rotate(2.5deg)}66%{transform:translateY(-5px) rotate(-1.5deg)}}
+        @keyframes ab_pulse     {0%,100%{transform:scale(1);opacity:.8}50%{transform:scale(1.2);opacity:1}}
+        @keyframes ab_borderRot {from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+        @keyframes ab_glowPulse {0%,100%{box-shadow:0 0 24px rgba(79,142,247,0.18)}50%{box-shadow:0 0 52px rgba(79,142,247,0.40),0 0 0 1px rgba(79,142,247,0.12)}}
+        @keyframes ab_scanDown  {0%{transform:translateY(-100%)}100%{transform:translateY(1200px)}}
+        @keyframes ab_shimmerBar{0%{transform:translateX(-100%)}100%{transform:translateX(220%)}}
+        @keyframes ab_shimmerBtn{0%{transform:translateX(-100%) skewX(-12deg)}100%{transform:translateX(280%) skewX(-12deg)}}
+        @keyframes ab_arrowPulse{0%,100%{transform:translateX(0)}50%{transform:translateX(4px)}}
+        @keyframes ab_hexDrift  {from{transform:translateY(0)}to{transform:translateY(80px)}}
+        @keyframes ab_gradText  {0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+        @keyframes ab_badgePulse{0%,100%{box-shadow:0 0 0 0 rgba(79,142,247,0.45)}50%{box-shadow:0 0 0 9px rgba(79,142,247,0)}}
 
-        .ab-section {
-          position: relative;
-          width: 100%;
-          overflow: hidden;
-          background: linear-gradient(160deg, #050714 0%, #080c1e 35%, #0d0620 65%, #060b1a 100%);
-          font-family: 'DM Sans', sans-serif;
-          padding: clamp(56px, 9vw, 110px) 0;
+        @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
+
+        /* ── Section base — same bg as Hero ── */
+        .ab-section{
+          position:relative;width:100%;overflow:hidden;
+          background:linear-gradient(165deg,#080A0F 0%,#0D1017 35%,#101520 65%,#090C13 100%);
+          font-family:'DM Sans',sans-serif;color:#F8FAFF;
+          padding:clamp(56px,9vw,110px) 0;
         }
+        .ab-scanline{position:absolute;inset:0;pointer-events:none;z-index:3;background:linear-gradient(transparent 50%,rgba(0,0,0,0.01) 50%);background-size:100% 3px;}
 
-        /* ── Mobile: single column, canvas FIRST then text ── */
-        .ab-inner {
-          position: relative;
-          z-index: 10;
-          max-width: 1320px;
-          margin: 0 auto;
-          padding: 0 clamp(16px, 5vw, 80px);
-          display: flex;
-          flex-direction: column;
-          gap: clamp(28px, 5vw, 48px);
+        /* ── Layout — single centred column, canvas inline after headline ── */
+        .ab-inner{
+          position:relative;z-index:10;max-width:860px;margin:0 auto;
+          padding:0 clamp(16px,4vw,60px);
+          display:flex;flex-direction:column;
+          gap:clamp(20px,3.5vw,32px);
         }
+        .ab-canvas-col{position:relative;width:100%;height:clamp(260px,70vw,480px);}
 
-        .ab-text-col {
-          display: flex;
-          flex-direction: column;
-          gap: clamp(12px, 2vw, 20px);
-          min-width: 0;
-          /* canvas is order:1 on mobile, text is order:2 */
-          order: 2;
-        }
-
-        .ab-canvas-col {
-          position: relative;
-          width: 100%;
-          height: clamp(240px, 72vw, 380px);
-          /* canvas first on mobile */
-          order: 1;
-        }
-
-        /* Hide decorative floating SVGs on mobile */
-        .ab-float-deco { display: none; }
-
-        /* ── Small tablet 600px+ ── */
-        @media (min-width: 600px) {
-          .ab-canvas-col { height: clamp(300px, 60vw, 440px); }
-          .ab-float-deco { display: block; }
-        }
-
-        /* ── Desktop 960px+: side-by-side, text LEFT, canvas RIGHT ── */
-        @media (min-width: 960px) {
-          .ab-inner {
-            flex-direction: row !important;
-            align-items: flex-start;
-            gap: clamp(40px, 5vw, 68px);
-          }
-          /* restore natural reading order on desktop */
-          .ab-text-col  { order: 1; flex: 1 1 0; }
-          .ab-canvas-col {
-            order: 2;
-            flex: 0 0 44%;
-            width: 44%;
-            height: clamp(480px, 44vw, 620px);
-            position: sticky;
-            top: 80px;
-          }
-        }
-
-        @media (min-width: 1200px) {
-          .ab-canvas-col {
-            flex: 0 0 46%;
-            width: 46%;
-            height: clamp(520px, 46vw, 660px);
-          }
+        /* Canvas card — matches Hero .it-canvas-card */
+        .ab-canvas-card{
+          width:100%;height:100%;border-radius:18px;overflow:hidden;
+          border:1px solid rgba(79,142,247,0.28);position:relative;
+          animation:ab_glowPulse 4s ease-in-out infinite;
         }
 
         /* ── Headline ── */
-        .ab-headline {
-          font-family: 'Syne', sans-serif;
-          font-weight: 900;
-          font-size: clamp(1.75rem, 7vw, 2.4rem);
-          line-height: 1.08;
-          letter-spacing: -0.025em;
-          margin: 0;
-          color: #fff;
+        .ab-hl{
+          font-family:'Sora',sans-serif;font-weight:800;line-height:1.04;
+          letter-spacing:-0.03em;color:#F8FAFF;margin:0;
+          font-size:clamp(1.75rem,7.8vw,2.35rem);
         }
-        .ab-headline .hl1 { display: block; color: #fff; }
-        .ab-headline .hl2 {
-          display: block;
-          background: linear-gradient(135deg, #818cf8 0%, #a78bfa 40%, #c084fc 70%, #f472b6 100%);
-          background-size: 200% auto;
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-          filter: drop-shadow(0 0 24px rgba(129,140,248,0.5));
-        }
-        @media (min-width: 768px) {
-          .ab-headline { font-size: clamp(2rem, 3.5vw, 3.2rem); }
-          .ab-headline .hl1, .ab-headline .hl2 { white-space: nowrap; }
-        }
-        @media (min-width: 1024px) {
-          .ab-headline { font-size: clamp(2.2rem, 3.8vw, 3.6rem); }
+        .ab-hl .ab-accent{
+          display:block;
+          background:linear-gradient(135deg,#93BBFF 0%,#4F8EF7 30%,#38BDF8 60%,#818CF8 85%,#4F8EF7 100%);
+          background-size:300% auto;
+          -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+          animation:ab_gradText 5s ease infinite;
+          filter:drop-shadow(0 0 22px rgba(79,142,247,0.5));
         }
 
-        /* Stats grid */
-        .ab-stats { display: flex; flex-wrap: wrap; gap: 8px; }
+        /* Tech tag — same as Hero .it-tag */
+        .ab-tag{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:6px;background:rgba(79,142,247,0.07);border:1px solid rgba(79,142,247,0.2);color:rgba(248,250,255,0.6);font-size:11px;font-weight:600;transition:all 0.22s cubic-bezier(0.23,1,0.32,1);cursor:default;white-space:nowrap;}
+        .ab-tag::before{content:'';width:4px;height:4px;border-radius:50%;background:#4F8EF7;opacity:0.7;flex-shrink:0;}
+        .ab-tag:hover{background:rgba(79,142,247,0.16);border-color:rgba(79,142,247,0.5);color:#F8FAFF;transform:translateY(-2px);box-shadow:0 4px 14px rgba(79,142,247,0.18);}
 
-        /* Highlights grid */
-        .ab-highlights { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        @media (max-width: 420px) { .ab-highlights { grid-template-columns: 1fr; } }
+        /* Skill bar shimmer — same as Hero */
+        .ab-skillbar-inner{position:relative;overflow:hidden;}
+        .ab-skillbar-inner::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(180,210,255,0.4),transparent);animation:ab_shimmerBar 2.4s ease-in-out infinite;}
 
         /* Tab bar */
-        .ab-tab-bar {
-          display: flex; gap: 4px;
-          background: rgba(255,255,255,0.04);
-          border-radius: 12px; padding: 4px;
-          border: 1px solid rgba(255,255,255,0.07);
-          flex-wrap: wrap;
-        }
-        .ab-tab {
-          flex: 1 1 80px;
-          padding: 8px 14px; border-radius: 8px; border: none;
-          font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 700;
-          letter-spacing: 0.04em; cursor: pointer;
-          transition: all 0.25s ease; color: rgba(165,180,252,0.55);
-          background: transparent;
-        }
-        .ab-tab.active {
-          background: linear-gradient(135deg, rgba(99,102,241,0.3), rgba(168,85,247,0.2));
-          border: 1px solid rgba(129,140,248,0.35);
-          color: #c7d2fe;
-          box-shadow: 0 2px 12px rgba(99,102,241,0.2);
-        }
-        .ab-tab:hover:not(.active) { color: rgba(199,210,254,0.8); background: rgba(255,255,255,0.04); }
+        .ab-tab-bar{display:flex;gap:4px;background:rgba(255,255,255,0.04);border-radius:10px;padding:4px;border:1px solid rgba(255,255,255,0.06);flex-wrap:wrap;}
+        .ab-tab{flex:1 1 80px;padding:8px 14px;border-radius:7px;border:none;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.04em;cursor:pointer;transition:all 0.22s ease;color:${C.tm};background:transparent;}
+        .ab-tab.active{background:rgba(79,142,247,0.14);border:1px solid rgba(79,142,247,0.35);color:${C.ts};box-shadow:0 2px 12px rgba(79,142,247,0.18);}
+        .ab-tab:hover:not(.active){color:rgba(248,250,255,0.75);background:rgba(255,255,255,0.04);}
 
-        /* Canvas card */
-        .ab-canvas-card {
-          width: 100%; height: 100%;
-          border-radius: 28px; overflow: hidden;
-          border: 1px solid rgba(129,140,248,0.18);
-          box-shadow: 0 0 80px rgba(99,102,241,0.15), inset 0 1px 0 rgba(255,255,255,0.08);
-          position: relative;
-          animation: ab_glow 4s ease-in-out infinite;
-        }
+        /* Highlights grid */
+        .ab-highlights{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+        @media(max-width:420px){.ab-highlights{grid-template-columns:1fr;}}
 
-        /* Rotating border accent */
-        .ab-rotating-border {
-          position: absolute; inset: -2px; border-radius: 30px;
-          background: conic-gradient(from 0deg, transparent 0%, #818cf830 20%, #c084fc60 40%, #67e8f930 60%, transparent 80%);
-          animation: ab_borderRot 8s linear infinite;
-          z-index: 0;
-        }
+        /* Floating shapes — hidden on mobile */
+        .ab-shapes{display:none !important;}
 
-        /* Shimmer bar */
-        .ab-shimmer-bar {
-          position: relative; overflow: hidden;
-          height: 3px; border-radius: 2px;
-          background: rgba(255,255,255,0.06);
+        /* ── Breakpoints ── */
+        @media(max-width:380px){
+          .ab-inner{padding:0 10px;gap:14px;}
+          .ab-canvas-col{height:clamp(220px,68vw,300px);}
+          .ab-hl{font-size:1.55rem;}
         }
-        .ab-shimmer-bar::after {
-          content: '';
-          position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
-          animation: ab_shimmer 2.5s ease-in-out infinite;
+        @media(min-width:480px){
+          .ab-canvas-col{height:clamp(300px,65vw,400px);}
+          .ab-hl{font-size:clamp(1.9rem,6vw,2.25rem);}
         }
-
-        /* Scanline overlay */
-        .ab-scanline {
-          position: absolute; inset: 0; pointer-events: none; z-index: 4;
-          background: linear-gradient(transparent 50%, rgba(0,0,0,0.02) 50%);
-          background-size: 100% 3px;
+        @media(min-width:600px){
+          .ab-inner{padding:0 clamp(20px,4vw,60px);gap:24px;}
+          .ab-canvas-col{height:clamp(360px,55vw,460px);}
+          .ab-hl{font-size:clamp(2rem,4.5vw,2.45rem);}
+          .ab-shapes{display:block !important;}
+        }
+        @media(min-width:768px){
+          .ab-canvas-col{height:clamp(400px,50vw,520px);}
+          .ab-hl{font-size:clamp(2.2rem,3.2vw,3.1rem);}
+        }
+        @media(min-width:1024px){
+          .ab-canvas-col{height:clamp(460px,48vw,560px);}
+          .ab-hl{font-size:clamp(2.4rem,3.4vw,3.4rem);}
         }
       `}</style>
 
       <section id="about" ref={sectionRef} className="ab-section" aria-label="About IsiTech Innovations">
 
-        {/* Grid background */}
-        <div style={{ position:"absolute",inset:0,zIndex:0,overflow:"hidden",backgroundImage:`linear-gradient(rgba(129,140,248,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(129,140,248,0.04) 1px,transparent 1px)`,backgroundSize:"55px 55px",animation:"ab_gridMove 10s linear infinite" }}/>
+        {/* Hex pattern — same as Hero */}
+        <div aria-hidden="true" style={{ position:"absolute",inset:0,zIndex:0,overflow:"hidden",animation:"ab_hexDrift 16s linear infinite" }}>
+          <HexPattern/>
+        </div>
 
-        {/* Scanline */}
-        <div className="ab-scanline" />
-
-        {/* Noise texture */}
-        <svg style={{ position:"absolute",inset:0,width:"100%",height:"100%",zIndex:0,opacity:0.025,pointerEvents:"none" }}>
-          <filter id="ab_noise">
-            <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/>
-            <feColorMatrix type="saturate" values="0"/>
-          </filter>
+        {/* Noise grain */}
+        <svg aria-hidden="true" style={{ position:"absolute",inset:0,width:"100%",height:"100%",zIndex:0,opacity:0.025,pointerEvents:"none" }}>
+          <filter id="ab_noise"><feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="3" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter>
           <rect width="100%" height="100%" filter="url(#ab_noise)"/>
         </svg>
 
-        {/* Radial glows */}
-        {[
-          { style:{top:"8%",left:"12%",width:"clamp(200px,46vw,600px)",height:"clamp(200px,46vw,600px)"},   bg:"rgba(99,102,241,0.14)" },
-          { style:{bottom:"4%",right:"8%",width:"clamp(180px,38vw,500px)",height:"clamp(180px,38vw,500px)"}, bg:"rgba(168,85,247,0.11)" },
-          { style:{top:"50%",left:"40%",width:"clamp(150px,30vw,400px)",height:"clamp(150px,30vw,400px)"},   bg:"rgba(103,232,249,0.07)" },
-        ].map((g, i) => (
-          <div key={i} style={{ position:"absolute",...g.style,borderRadius:"50%",background:`radial-gradient(ellipse,${g.bg} 0%,transparent 70%)`,pointerEvents:"none",zIndex:1 }}/>
-        ))}
+        <div className="ab-scanline" aria-hidden="true"/>
 
-        {/* Floating SVG accents — hidden on mobile */}
-        <div className="ab-float-deco" style={{ position:"absolute",inset:0,zIndex:2,pointerEvents:"none",overflow:"hidden" }}>
-          <svg width="68" height="68" viewBox="0 0 100 100" style={{ position:"absolute",top:"6%",right:"3%",animation:"ab_float1 9s ease-in-out infinite",filter:"drop-shadow(0 0 12px #f472b660)" }}>
-            <defs><linearGradient id="ab_d1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#fce7f3"/><stop offset="100%" stopColor="#ec4899"/></linearGradient></defs>
-            <polygon points="50,5 95,50 50,95 5,50" fill="url(#ab_d1)" opacity="0.7"/>
-            <polygon points="50,5 95,50 50,50" fill="#f9a8d4" opacity="0.3"/>
+        {/* Ambient glows — same positions as Hero */}
+        <div aria-hidden="true" style={{ position:"absolute",top:"8%",left:"12%",width:"min(600px,50vw)",height:"min(600px,50vw)",borderRadius:"50%",background:"radial-gradient(ellipse,rgba(79,142,247,0.09) 0%,transparent 68%)",pointerEvents:"none",zIndex:1 }}/>
+        <div aria-hidden="true" style={{ position:"absolute",bottom:"5%",right:"8%",width:"min(480px,38vw)",height:"min(480px,38vw)",borderRadius:"50%",background:"radial-gradient(ellipse,rgba(56,189,248,0.07) 0%,transparent 68%)",pointerEvents:"none",zIndex:1 }}/>
+        <div aria-hidden="true" style={{ position:"absolute",top:"50%",left:"5%",width:"min(360px,28vw)",height:"min(360px,28vw)",borderRadius:"50%",background:"radial-gradient(ellipse,rgba(129,140,248,0.05) 0%,transparent 68%)",pointerEvents:"none",zIndex:1 }}/>
+
+        {/* Floating shapes — 600px+ only */}
+        <div className="ab-shapes" aria-hidden="true" style={{ position:"absolute",inset:0,pointerEvents:"none",overflow:"hidden",zIndex:2 }}>
+          <svg width="80" height="80" viewBox="0 0 120 120" style={{ position:"absolute",top:"6%",right:"3%",animation:"ab_float1 8s ease-in-out infinite",filter:"drop-shadow(0 0 14px rgba(79,142,247,0.55))" }}>
+            <defs><linearGradient id="ab_sh1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#93BBFF"/><stop offset="100%" stopColor="#818CF8"/></linearGradient></defs>
+            <polygon points="60,5 110,32 110,88 60,115 10,88 10,32" fill="none" stroke="url(#ab_sh1)" strokeWidth="1.4" opacity="0.7"/>
           </svg>
-          <svg width="85" height="85" viewBox="0 0 120 120" style={{ position:"absolute",bottom:"7%",left:"2%",animation:"ab_float2 11s ease-in-out infinite",filter:"drop-shadow(0 0 14px #818cf860)" }}>
-            <defs>
-              <linearGradient id="ab_c1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#c7d2fe"/><stop offset="100%" stopColor="#6366f1"/></linearGradient>
-              <linearGradient id="ab_c2" x1="1" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#818cf8"/><stop offset="100%" stopColor="#312e81"/></linearGradient>
-            </defs>
-            <polygon points="60,5 110,40 110,80 60,115 10,80 10,40" fill="url(#ab_c1)" opacity="0.7"/>
-            <polygon points="60,5 110,40 60,60" fill="url(#ab_c2)" opacity="0.5"/>
+          <svg width="60" height="60" viewBox="0 0 90 90" style={{ position:"absolute",bottom:"8%",left:"2%",animation:"ab_float1 11s ease-in-out infinite reverse",filter:"drop-shadow(0 0 10px rgba(56,189,248,0.5))" }}>
+            <polygon points="45,4 86,45 45,86 4,45" fill={C.accent} fillOpacity="0.06" stroke={C.accent} strokeWidth="1.1" opacity="0.65"/>
           </svg>
-          <svg width="75" height="75" viewBox="0 0 100 100" style={{ position:"absolute",top:"44%",right:"1%",animation:"ab_spin 18s linear infinite",filter:"drop-shadow(0 0 10px #67e8f960)" }}>
-            <defs><linearGradient id="ab_t1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#67e8f9"/><stop offset="100%" stopColor="#0891b2"/></linearGradient></defs>
-            <ellipse cx="50" cy="50" rx="45" ry="18" fill="none" stroke="url(#ab_t1)" strokeWidth="8" opacity="0.7"/>
-            <ellipse cx="50" cy="50" rx="45" ry="18" fill="none" stroke="#cffafe" strokeWidth="1.5" opacity="0.3"/>
-          </svg>
-          <svg width="52" height="52" viewBox="0 0 80 80" style={{ position:"absolute",top:"8%",left:"2%",animation:"ab_float1 7s ease-in-out infinite reverse",filter:"drop-shadow(0 0 8px #fbbf2460)" }}>
-            <defs><linearGradient id="ab_cub" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#fef3c7"/><stop offset="100%" stopColor="#f59e0b"/></linearGradient></defs>
-            <polygon points="15,25 55,25 55,65 15,65" fill="url(#ab_cub)" opacity="0.55" stroke="#fbbf24" strokeWidth="1.2"/>
-            <polygon points="15,25 55,25 65,15 25,15" fill="#fcd34d" opacity="0.6" stroke="#fbbf24" strokeWidth="1.2"/>
-            <polygon points="55,25 65,15 65,55 55,65" fill="#d97706" opacity="0.55" stroke="#fbbf24" strokeWidth="1.2"/>
+          <svg width="46" height="46" viewBox="0 0 60 60" style={{ position:"absolute",top:"38%",right:"1%",animation:"ab_float1 9s ease-in-out infinite 2s" }}>
+            <rect x="10" y="10" width="40" height="40" rx="4" fill="none" stroke={C.accentAlt} strokeWidth="1" opacity="0.4" transform="rotate(22 30 30)"/>
           </svg>
         </div>
 
         <div className="ab-inner">
 
-          {/* ══ CANVAS COLUMN — order:1 on mobile, order:2 on desktop ══ */}
-          <CanvasColumn visible={visible} />
-
-          {/* ══ TEXT COLUMN — order:2 on mobile, order:1 on desktop ══ */}
-          <div
-            className="ab-text-col"
-            style={{ animation: visible ? "ab_fadeRight 0.9s ease both 0.1s" : "none", opacity: visible ? 1 : 0 }}
-          >
-            {/* Badge */}
-            <div>
-              <span style={{ display:"inline-flex",alignItems:"center",gap:7,padding:"6px 16px",borderRadius:100,background:"linear-gradient(135deg,rgba(99,102,241,0.2),rgba(168,85,247,0.13))",border:"1px solid rgba(129,140,248,0.32)",color:"#a5b4fc",fontSize:10,fontWeight:700,letterSpacing:"0.2em",textTransform:"uppercase" }}>
-                <span style={{ width:5,height:5,borderRadius:"50%",background:"#818cf8",boxShadow:"0 0 8px #818cf8",animation:"ab_pulse 2s ease-in-out infinite",display:"inline-block" }}/>
+            {/* Badge — same style as Hero */}
+            <div style={{ animation: visible ? "ab_fadeUp 0.6s ease both 0.08s" : "none", opacity: visible ? 1 : 0 }}>
+              <span style={{ display:"inline-flex",alignItems:"center",gap:7,padding:"6px 16px",borderRadius:7,background:"rgba(79,142,247,0.10)",border:`1px solid rgba(79,142,247,0.32)`,color:C.o2,fontSize:10,fontWeight:700,letterSpacing:"0.2em",textTransform:"uppercase",animation:"ab_badgePulse 3.2s ease-in-out infinite",boxShadow:"0 0 18px rgba(79,142,247,0.12)" }}>
+                <span style={{ width:5,height:5,borderRadius:"50%",background:C.o1,boxShadow:`0 0 9px ${C.o1}`,animation:"ab_pulse 2s ease-in-out infinite",display:"inline-block",flexShrink:0 }}/>
                 {ABOUT.badge}
               </span>
             </div>
 
             {/* Headline */}
-            <div style={{ animation: visible ? "ab_fadeUp 0.7s ease both 0.2s" : "none" }}>
-              <h2 className="ab-headline">
-                <span className="hl1">About IsiTech</span>
-                <span className="hl2">Innovations</span>
+            <div style={{ animation: visible ? "ab_fadeUp 0.7s ease both 0.16s" : "none", opacity: visible ? 1 : 0 }}>
+              <h2 className="ab-hl">
+                <span style={{ display:"block",color:C.tm,fontSize:"0.62em",fontWeight:400,marginBottom:5,letterSpacing:"0.04em",fontFamily:"'DM Sans',sans-serif" }}>Who We Are</span>
+                <span style={{ display:"block",color:C.tw }}>About IsiTech</span>
+                <span className="ab-accent">Innovations</span>
               </h2>
             </div>
 
-            {/* Tagline */}
-            <div style={{ animation: visible ? "ab_fadeUp 0.7s ease both 0.28s" : "none" }}>
-              <p style={{ color:"rgba(165,180,252,0.7)",fontSize:"clamp(14px,1.6vw,17px)",fontWeight:500,fontStyle:"italic",lineHeight:1.6,margin:0,borderLeft:"2px solid rgba(129,140,248,0.4)",paddingLeft:14 }}>
+            <div style={{ animation: visible ? "ab_fadeUp 0.6s ease both 0.22s" : "none", opacity: visible ? 1 : 0 }}><Divider/></div>
+
+            {/* ── 3D Canvas sits right here, after the headline ── */}
+            <CanvasColumn visible={visible}/>
+
+            {/* Tagline — same italic quote style */}
+            <div style={{ opacity: visible ? 1 : 0, animation: visible ? "ab_fadeUp 0.7s ease both 0.3s" : "none" }}>
+              <p style={{ color:C.tm,fontSize:"clamp(13px,1.5vw,16px)",fontWeight:500,fontStyle:"italic",lineHeight:1.7,margin:0,borderLeft:`2px solid ${C.o1}50`,paddingLeft:14 }}>
                 {ABOUT.tagline}
               </p>
             </div>
 
-            {/* Description */}
-            <div style={{ display:"flex",flexDirection:"column",gap:12,animation:visible?"ab_fadeUp 0.7s ease both 0.35s":"none" }}>
+            {/* Description paragraphs */}
+            <div style={{ display:"flex",flexDirection:"column",gap:11,animation:visible?"ab_fadeUp 0.7s ease both 0.36s":"none" }}>
               {ABOUT.description.map((p, i) => (
-                <p key={i} style={{ color: i===0 ? "rgba(199,210,254,0.85)" : "rgba(199,210,254,0.6)", fontSize:"clamp(13px,1.5vw,16px)", lineHeight:1.8, fontWeight: i===0 ? 500 : 400, margin:0 }}>
+                <p key={i} style={{ color:i===0?C.ts:C.tm,fontSize:"clamp(13px,1.45vw,15.5px)",lineHeight:1.85,fontWeight:i===0?500:400,margin:0 }}>
                   {p}
                 </p>
               ))}
             </div>
 
             {/* Highlights */}
-            <div>
-              <div style={{ color:"rgba(165,180,252,0.45)",fontSize:10,fontWeight:700,letterSpacing:"0.18em",textTransform:"uppercase",marginBottom:10 }}>Core Capabilities</div>
+            <div style={{ opacity: visible ? 1 : 0, animation: visible ? "ab_fadeUp 0.7s ease both 0.42s" : "none" }}>
+              <div style={{ color:C.tf,fontSize:9,fontWeight:700,letterSpacing:"0.24em",textTransform:"uppercase",marginBottom:10 }}>Core Capabilities</div>
               <div className="ab-highlights">
-                {ABOUT.highlights.map((item, i) => (
-                  <HighlightCard key={i} item={item} index={i} visible={visible} />
+                {ABOUT.highlights.map((item,i) => (
+                  <HighlightCard key={i} item={item} index={i} visible={visible}/>
                 ))}
               </div>
             </div>
 
-            {/* Tabs */}
-            <div style={{ animation:visible?"ab_fadeUp 0.7s ease both 0.6s":"none" }}>
+            {/* Tab bar */}
+            <div style={{ opacity: visible ? 1 : 0, animation: visible ? "ab_fadeUp 0.7s ease both 0.50s" : "none" }}>
               <div className="ab-tab-bar">
-                {tabs.map((tab, i) => (
+                {ABOUT.tabs.map((tab, i) => (
                   <button key={tab} className={`ab-tab${activeTab===i?" active":""}`} onClick={() => setActiveTab(i)}>{tab}</button>
                 ))}
               </div>
-              <div style={{ marginTop:12,padding:"14px 16px",borderRadius:14,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(129,140,248,0.1)",minHeight:72 }}>
-                <p style={{ color:"rgba(199,210,254,0.65)",fontSize:"clamp(12px,1.4vw,14px)",lineHeight:1.75,margin:0 }}>
-                  {tabContent[activeTab]}
+              <div style={{ marginTop:10,padding:"14px 16px",borderRadius:12,background:C.bg2,border:"1px solid rgba(255,255,255,0.06)",minHeight:72 }}>
+                <p style={{ color:C.tm,fontSize:"clamp(12px,1.4vw,14px)",lineHeight:1.8,margin:0 }}>
+                  {ABOUT.tabContent[activeTab]}
                 </p>
               </div>
             </div>
 
-            {/* Stats */}
-            <div className="ab-stats" style={{ animation:visible?"ab_fadeUp 0.7s ease both 0.7s":"none" }}>
-              {ABOUT.stats.map((s, i) => (
-                <StatCard key={i} stat={s} active={visible} />
-              ))}
-            </div>
-
-            {/* Skill bars */}
-            <div style={{ display:"flex",flexDirection:"column",gap:10,animation:visible?"ab_fadeUp 0.7s ease both 0.8s":"none" }}>
-              {[
-                { label:"UI/UX & Branding", pct:96, col:"#818cf8" },
-                { label:"Full-Stack Dev",   pct:93, col:"#c084fc" },
-                { label:"Cloud & DevOps",   pct:89, col:"#67e8f9" },
-                { label:"AI Integration",   pct:85, col:"#f472b6" },
-              ].map(s => (
-                <div key={s.label}>
-                  <div style={{ display:"flex",justifyContent:"space-between",marginBottom:5 }}>
-                    <span style={{ color:"rgba(199,210,254,0.65)",fontSize:11,fontWeight:600 }}>{s.label}</span>
-                    <span style={{ color:s.col,fontSize:11,fontWeight:800 }}>{s.pct}%</span>
+            {/* Skill bars — same as Hero */}
+            <div style={{ background:C.bg2,border:"1px solid rgba(255,255,255,0.06)",borderRadius:12,padding:"16px 18px",animation:visible?"ab_fadeUp 0.7s ease both 0.56s":"none" }}>
+              <div style={{ color:C.tf,fontSize:9,fontWeight:700,letterSpacing:"0.24em",textTransform:"uppercase",marginBottom:14 }}>Expertise Level</div>
+              {ABOUT.skillBars.map((s,i) => (
+                <div key={s.label} style={{ marginBottom:i<ABOUT.skillBars.length-1?14:0 }}>
+                  <div style={{ display:"flex",justifyContent:"space-between",marginBottom:6 }}>
+                    <span style={{ color:C.ts,fontSize:11,fontWeight:600 }}>{s.label}</span>
+                    <span style={{ color:s.color,fontSize:11,fontWeight:800 }}>{s.pct}%</span>
                   </div>
-                  <div className="ab-shimmer-bar">
-                    <div style={{ height:"100%",width:visible?`${s.pct}%`:"0%",borderRadius:2,background:`linear-gradient(90deg,${s.col}70,${s.col})`,transition:"width 1.6s cubic-bezier(0.23,1,0.32,1) 0.9s" }}/>
+                  <div style={{ height:3,borderRadius:2,background:"rgba(255,255,255,0.055)",overflow:"hidden" }}>
+                    <div className="ab-skillbar-inner" style={{ height:"100%",borderRadius:2,background:`linear-gradient(90deg,${s.color}70,${s.color})`,width:visible?`${s.pct}%`:"0%",transition:`width 1.7s cubic-bezier(0.23,1,0.32,1) ${0.6 + i*0.15}s`,boxShadow:`0 0 7px ${s.color}` }}/>
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* Social proof */}
-            <div style={{ display:"flex",alignItems:"center",gap:14,flexWrap:"wrap",animation:visible?"ab_fadeUp 0.7s ease both 0.9s":"none" }}>
+            {/* Stats row */}
+            <div style={{ display:"flex",flexWrap:"wrap",gap:8,animation:visible?"ab_fadeUp 0.7s ease both 0.64s":"none" }}>
+              {ABOUT.stats.map((s,i) => (
+                <StatCard key={i} stat={s} active={visible} index={i}/>
+              ))}
+            </div>
+
+            {/* Social proof — same as Hero */}
+            <div style={{ display:"flex",alignItems:"center",gap:12,flexWrap:"wrap",animation:visible?"ab_fadeUp 0.7s ease both 0.82s":"none" }}>
               <div style={{ display:"flex" }}>
-                {[0,1,2,3,4].map(i => (
-                  <div key={i} style={{ width:28,height:28,borderRadius:"50%",marginLeft:i===0?0:"-9px",border:"2px solid #050714",background:`linear-gradient(135deg,${["#6366f1","#8b5cf6","#a855f7","#c084fc","#818cf8"][i]},${["#312e81","#4c1d95","#581c87","#6b21a8","#3730a3"][i]})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"8px",color:"rgba(255,255,255,0.9)",fontWeight:700 }}>
-                    {["A","B","C","D","E"][i]}
+                {ABOUT.avatarColors.map(([from,to],i) => (
+                  <div key={i} style={{ width:29,height:29,borderRadius:"50%",marginLeft:i===0?0:"-10px",border:`2px solid ${C.bg1}`,background:`linear-gradient(135deg,${from},${to})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,color:"#fff",fontWeight:800,flexShrink:0,boxShadow:`0 0 5px ${from}45` }}>
+                    {String.fromCharCode(65+i)}
                   </div>
                 ))}
               </div>
               <div>
-                <div style={{ display:"flex",gap:1,marginBottom:2 }}>
-                  {[...Array(5)].map((_,i) => <span key={i} style={{ color:"#fbbf24",fontSize:11 }}>★</span>)}
+                <div style={{ display:"flex",gap:2,marginBottom:3 }}>
+                  {[...Array(5)].map((_,i) => <span key={i} style={{ color:C.o1,fontSize:12,filter:`drop-shadow(0 0 4px ${C.o1}70)` }}>★</span>)}
                 </div>
-                <span style={{ color:"rgba(165,180,252,0.6)",fontSize:11,fontWeight:500 }}>
-                  Trusted by <strong style={{ color:"#a5b4fc" }}>500+</strong> global brands
+                <span style={{ color:C.tm,fontSize:12,fontWeight:500 }}>
+                  Trusted by <strong style={{ color:C.tw }}>1,200+</strong> companies worldwide
                 </span>
               </div>
-              <div style={{ display:"flex",alignItems:"center",gap:6,padding:"5px 12px",borderRadius:100,background:"rgba(52,211,153,0.1)",border:"1px solid rgba(52,211,153,0.25)" }}>
-                <span style={{ width:6,height:6,borderRadius:"50%",background:"#34d399",boxShadow:"0 0 8px #34d399",animation:"ab_pulse 2s ease-in-out infinite",display:"inline-block" }}/>
-                <span style={{ color:"#34d399",fontSize:10,fontWeight:700,letterSpacing:"0.1em" }}>AVAILABLE FOR PROJECTS</span>
+              <div style={{ display:"flex",alignItems:"center",gap:6,padding:"5px 12px",borderRadius:7,background:"rgba(79,142,247,0.09)",border:"1px solid rgba(79,142,247,0.26)" }}>
+                <span style={{ width:6,height:6,borderRadius:"50%",background:C.o1,boxShadow:`0 0 9px ${C.o1}`,animation:"ab_pulse 2s ease-in-out infinite",display:"inline-block",flexShrink:0 }}/>
+                <span style={{ color:C.o1,fontSize:10,fontWeight:700,letterSpacing:"0.12em" }}>AVAILABLE FOR PROJECTS</span>
               </div>
             </div>
 
-            {/* CTA buttons */}
-            <div style={{ display:"flex",flexWrap:"wrap",gap:12,animation:visible?"ab_fadeUp 0.7s ease both 1s":"none" }}>
-              <button
-                onClick={() => handleNav(ABOUT.cta.href)}
-                onMouseEnter={() => setHovCta1(true)}
-                onMouseLeave={() => setHovCta1(false)}
-                style={{ padding:"12px 28px",borderRadius:100,border:"none",cursor:"pointer",fontFamily:"'DM Sans',sans-serif",fontSize:"clamp(13px,1.4vw,15px)",fontWeight:800,letterSpacing:"0.05em",color:"#fff",background:hovCta1?"linear-gradient(135deg,#818cf8,#6366f1,#a855f7)":"linear-gradient(135deg,#6366f1,#4f46e5,#7c3aed)",boxShadow:hovCta1?"0 20px 55px rgba(99,102,241,0.55)":"0 8px 28px rgba(99,102,241,0.4)",transform:hovCta1?"translateY(-3px) scale(1.04)":"translateY(0) scale(1)",transition:"all 0.3s cubic-bezier(0.23,1,0.32,1)",display:"inline-flex",alignItems:"center",gap:8 }}>
-                <span style={{ animation:"ab_arrowPulse 2s ease-in-out infinite",display:"inline-block" }}>→</span>
-                {ABOUT.cta.label}
-              </button>
-              <button
-                onClick={() => handleNav(ABOUT.cta2.href)}
-                onMouseEnter={() => setHovCta2(true)}
-                onMouseLeave={() => setHovCta2(false)}
-                style={{ padding:"12px 28px",borderRadius:100,cursor:"pointer",fontFamily:"'DM Sans',sans-serif",fontSize:"clamp(13px,1.4vw,15px)",fontWeight:800,letterSpacing:"0.05em",color:"#c7d2fe",background:hovCta2?"rgba(129,140,248,0.12)":"transparent",border:"1.5px solid rgba(129,140,248,0.45)",boxShadow:hovCta2?"0 8px 28px rgba(99,102,241,0.22)":"none",transform:hovCta2?"translateY(-3px) scale(1.04)":"translateY(0) scale(1)",transition:"all 0.3s cubic-bezier(0.23,1,0.32,1)" }}>
-                {ABOUT.cta2.label}
-              </button>
+            {/* CTA buttons — same as Hero */}
+            <div style={{ display:"flex",flexWrap:"wrap",gap:11,animation:visible?"ab_fadeUp 0.7s ease both 0.9s":"none" }}>
+              <CTAButton label="Discover Our Services" href="#services" primary onClick={handleNav}/>
+              <CTAButton label="View Case Studies"     href="#projects" primary={false} onClick={handleNav}/>
             </div>
-          </div>
 
         </div>
 
-        {/* Bottom divider */}
-        <div style={{ position:"absolute",bottom:0,left:"8%",right:"8%",height:1,background:"linear-gradient(90deg,transparent,rgba(129,140,248,0.28),transparent)",zIndex:5 }}/>
+        {/* Bottom divider — same as Hero fade overlay */}
+        <div aria-hidden="true" style={{ position:"absolute",bottom:0,left:0,right:0,height:60,background:`linear-gradient(transparent,rgba(8,10,15,0.85))`,zIndex:5,pointerEvents:"none" }}/>
+        <div aria-hidden="true" style={{ position:"absolute",bottom:0,left:"8%",right:"8%",height:1,background:`linear-gradient(90deg,transparent,${C.o1}28,transparent)`,zIndex:6 }}/>
       </section>
     </>
   );

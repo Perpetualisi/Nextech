@@ -1,65 +1,50 @@
 import { useEffect, useState } from "react";
-import Navbar  from "./Components/Navbar/Navbar";
-import Hero    from "./Components/Hero/Hero";
-import About   from "./Components/About/About";
+import Navbar   from "./Components/Navbar/Navbar";
+import Hero     from "./Components/Hero/Hero";
+import About    from "./Components/About/About";
 import Services from "./Components/Services/Services";
 import Projects from "./Components/Projects/Projects";
-import Blog    from "./Components/Blog/Blog";
-import Contact from "./Components/Contact/Contact";
-import Footer  from "./Components/Footer/Footer";
+import Blog     from "./Components/Blog/Blog";
+import Contact  from "./Components/Contact/Contact";
+import Footer   from "./Components/Footer/Footer";
+import FloatingWhatsApp from "./Components/FloatingWhatsApp";
 import "./index.css";
 import "./App.css";
 
-/* ── Minimal page-loader shown while fonts / assets load ── */
+/* ─── Page Loader ────────────────────────────────────────────────────── */
 const Loader = ({ done }) => (
   <div style={{
-    position:"fixed", inset:0, zIndex:9999,
-    background:"#050714",
-    display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center",
-    gap:24,
-    transition:"opacity 0.6s ease, visibility 0.6s ease",
-    opacity: done ? 0 : 1,
-    visibility: done ? "hidden" : "visible",
-    pointerEvents: done ? "none" : "all",
+    position:"fixed",inset:0,zIndex:9999,
+    background:"#080A0F",
+    display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:20,
+    transition:"opacity 0.45s ease,visibility 0.45s ease",
+    opacity:done?0:1, visibility:done?"hidden":"visible",
+    pointerEvents:done?"none":"all",
   }}>
-    {/* Spinning logo */}
+    {/* Logo mark */}
     <div style={{
-      width:60, height:60, borderRadius:16,
-      background:"linear-gradient(135deg,#6366f1,#a855f7)",
-      display:"flex", alignItems:"center", justifyContent:"center",
-      fontSize:28, fontWeight:900, color:"#fff",
-      fontFamily:"'Syne',sans-serif",
-      boxShadow:"0 0 40px rgba(99,102,241,0.55)",
-      animation:"app_spin 1.2s linear infinite",
+      width:52,height:52,borderRadius:14,
+      background:"linear-gradient(135deg,#4F8EF7,#38BDF8)",
+      display:"flex",alignItems:"center",justifyContent:"center",
+      fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:22,color:"#fff",
+      boxShadow:"0 0 32px rgba(79,142,247,0.55)",
+      animation:"app_pulse 1.1s ease-in-out infinite",
     }}>I</div>
 
-    {/* Progress bar */}
-    <div style={{
-      width:160, height:3, borderRadius:3,
-      background:"rgba(129,140,248,0.15)",
-      overflow:"hidden",
-    }}>
-      <div style={{
-        height:"100%", borderRadius:3,
-        background:"linear-gradient(90deg,#6366f1,#c084fc,#f472b6)",
-        animation:"app_progress 1.4s ease-in-out infinite",
-      }}/>
+    {/* Slim progress bar */}
+    <div style={{width:140,height:2,borderRadius:2,background:"rgba(79,142,247,0.15)",overflow:"hidden"}}>
+      <div style={{height:"100%",borderRadius:2,background:"linear-gradient(90deg,#4F8EF7,#38BDF8,#818CF8)",animation:"app_progress 1.2s ease-in-out infinite"}}/>
     </div>
 
-    <p style={{
-      color:"rgba(165,180,252,0.45)",
-      fontFamily:"'DM Sans',sans-serif",
-      fontSize:11, fontWeight:700,
-      letterSpacing:"0.22em", textTransform:"uppercase",
-    }}>IsiTech Innovations</p>
+    <p style={{color:"rgba(120,144,184,0.55)",fontFamily:"'DM Sans',sans-serif",fontSize:10,fontWeight:700,letterSpacing:"0.24em",textTransform:"uppercase",margin:0}}>IsiTech Innovations</p>
   </div>
 );
 
-/* ── Scroll-to-top FAB (appears after 400px scroll) ── */
+/* ─── Scroll-to-top FAB ──────────────────────────────────────────────── */
 const ScrollTopFAB = () => {
   const [visible, setVisible] = useState(false);
   useEffect(() => {
-    const h = () => setVisible(window.scrollY > 400);
+    const h = () => setVisible(window.scrollY > 500);
     window.addEventListener("scroll", h, { passive:true });
     return () => window.removeEventListener("scroll", h);
   }, []);
@@ -67,85 +52,81 @@ const ScrollTopFAB = () => {
   return (
     <button
       onClick={() => window.scrollTo({ top:0, behavior:"smooth" })}
-      aria-label="Scroll to top"
+      aria-label="Back to top"
       style={{
-        position:"fixed", bottom:28, right:24, zIndex:900,
-        width:44, height:44, borderRadius:"50%",
-        border:"1px solid rgba(129,140,248,0.35)",
-        background:"rgba(5,7,20,0.88)",
+        position:"fixed",bottom:82,right:22,zIndex:900,
+        width:42,height:42,borderRadius:"50%",
+        border:"1px solid rgba(79,142,247,0.35)",
+        background:"rgba(8,10,15,0.90)",
         backdropFilter:"blur(16px)",
-        color:"#818cf8", fontSize:18, fontWeight:700,
-        display:"flex", alignItems:"center", justifyContent:"center",
+        color:"#4F8EF7",fontSize:17,fontWeight:700,
+        display:"flex",alignItems:"center",justifyContent:"center",
         cursor:"pointer",
-        boxShadow:"0 4px 24px rgba(99,102,241,0.35)",
-        transition:"all 0.3s ease",
-        animation:"app_fabIn 0.3s ease both",
+        boxShadow:"0 4px 22px rgba(79,142,247,0.28)",
+        transition:"all 0.26s ease",
+        animation:"app_fabIn 0.28s ease both",
+        fontFamily:"sans-serif",
       }}
-      onMouseEnter={e => { e.currentTarget.style.background="rgba(99,102,241,0.25)"; e.currentTarget.style.transform="translateY(-3px)"; }}
-      onMouseLeave={e => { e.currentTarget.style.background="rgba(5,7,20,0.88)"; e.currentTarget.style.transform="translateY(0)"; }}
+      onMouseEnter={e=>{e.currentTarget.style.background="rgba(79,142,247,0.20)";e.currentTarget.style.transform="translateY(-3px)";}}
+      onMouseLeave={e=>{e.currentTarget.style.background="rgba(8,10,15,0.90)";e.currentTarget.style.transform="translateY(0)";}}
     >↑</button>
   );
 };
 
+/* ─── App ────────────────────────────────────────────────────────────── */
 const App = () => {
   const [loaded, setLoaded] = useState(false);
 
-  /* Simulate asset readiness — resolves on window load or 1.8s max */
   useEffect(() => {
+    // Resolve as soon as the DOM is interactive — don't wait for all resources
     const done = () => setLoaded(true);
-    if (document.readyState === "complete") {
-      setTimeout(done, 600);
+
+    if (document.readyState !== "loading") {
+      // DOM already ready — show content after a single rAF so paint happens first
+      requestAnimationFrame(() => setTimeout(done, 300));
     } else {
-      window.addEventListener("load", () => setTimeout(done, 400), { once:true });
-      setTimeout(done, 1800); // hard cap
+      document.addEventListener("DOMContentLoaded", () => setTimeout(done, 300), { once:true });
+      // Hard cap — never block more than 1.4s
+      setTimeout(done, 1400);
     }
   }, []);
 
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300&display=swap');
+        /* ── Fonts — preconnect declared in index.html for fastest load ── */
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&family=Sora:wght@600;700;800&display=swap');
 
-        @keyframes app_spin     { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-        @keyframes app_progress { 0%{transform:translateX(-100%)} 60%{transform:translateX(0%)} 100%{transform:translateX(100%)} }
-        @keyframes app_fabIn    { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes app_sectionIn{ from{opacity:0;transform:translateY(32px)} to{opacity:1;transform:translateY(0)} }
+        /* ── Global resets ── */
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+        html{scroll-behavior:smooth;}
+        body{overflow-x:hidden;background:#080A0F;}
 
-        /* ── Root wrapper ── */
-        #app-root {
-          display: flex;
-          flex-direction: column;
-          min-height: 100dvh;
-          width: 100%;
-          overflow-x: hidden;
-          background: #050714;
+        /* ── Loader animations ── */
+        @keyframes app_pulse   {0%,100%{transform:scale(1);box-shadow:0 0 32px rgba(79,142,247,0.55)}50%{transform:scale(1.06);box-shadow:0 0 52px rgba(79,142,247,0.75)}}
+        @keyframes app_progress{0%{transform:translateX(-100%)}55%{transform:translateX(0%)}100%{transform:translateX(100%)}}
+        @keyframes app_fabIn   {from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+        /* ── App wrapper ── */
+        #app-root{
+          display:flex;flex-direction:column;
+          min-height:100dvh;width:100%;overflow-x:hidden;
+          background:#080A0F;
         }
 
-        /* ── Section entrance via IntersectionObserver class ── */
-        .section-visible {
-          animation: app_sectionIn 0.75s cubic-bezier(0.23,1,0.32,1) both;
-        }
+        /* ── Text selection ── */
+        ::selection{background:rgba(79,142,247,0.30);color:#F8FAFF;}
 
-        /* ── Smooth inter-section gradient transitions ── */
-        #app-root > section,
-        #app-root > footer {
-          position: relative;
-        }
-
-        /* ── Selection colour ── */
-        ::selection {
-          background: rgba(99,102,241,0.35);
-          color: #e0e7ff;
-        }
+        /* ── Scrollbar ── */
+        ::-webkit-scrollbar{width:6px;}
+        ::-webkit-scrollbar-track{background:#080A0F;}
+        ::-webkit-scrollbar-thumb{background:rgba(79,142,247,0.35);border-radius:3px;}
+        ::-webkit-scrollbar-thumb:hover{background:rgba(79,142,247,0.55);}
       `}</style>
 
-      {/* Page loader */}
       <Loader done={loaded}/>
-
-      {/* Fixed navbar */}
       <Navbar/>
 
-      {/* Main content */}
       <main id="app-root" role="main">
         <Hero/>
         <About/>
@@ -156,8 +137,8 @@ const App = () => {
         <Footer/>
       </main>
 
-      {/* Scroll-to-top FAB */}
       <ScrollTopFAB/>
+      <FloatingWhatsApp/>
     </>
   );
 };

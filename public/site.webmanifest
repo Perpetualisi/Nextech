@@ -1,0 +1,10 @@
+{
+  "name": "IsiTech Innovations",
+  "short_name": "IsiTech",
+  "description": "Engineering Tomorrow — Software, AI & Cloud",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#D4AF37",
+  "background_color": "#060400",
+  "icons": []
+}
