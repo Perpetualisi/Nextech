@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import * as THREE from "three";
 
-/* ─── Design Tokens — identical to Hero / About / Services ──────────── */
+/* ─── Design Tokens ──────────────────────────────────────────────────── */
 const C = {
   bg0:"#080A0F", bg1:"#0D1017", bg2:"#131820", bg3:"#1C2333",
   o1:"#4F8EF7",  o2:"#6BA3FF",  o3:"#93BBFF",  o4:"#2563EB",
@@ -9,52 +9,57 @@ const C = {
   tw:"#F8FAFF", ts:"#C8D5F0", tm:"#7A90B8", tf:"#3A4F72",
 };
 
-/* ─── Project Data ───────────────────────────────────────────────────── */
+/* ─── Project Data — no images, each has a unique 3D shape + scene ──── */
 const PROJECTS = [
   {
     id:"conotex",
     title:"Conotex Integrated Services",
     subtitle:"IT & Low-Voltage Solutions",
     desc:"Nationwide low-voltage and managed IT solutions. Since 2011, CIS has partnered with top brands to design, deploy, and manage secure, reliable digital infrastructure.",
-    images:["/conotex2.webp","/conotex3.jpg","/conotex1.png"],
     link:"https://www.conotextech.com/",
     color:"#4F8EF7", gradFrom:"#4F8EF7", gradTo:"#2563EB",
     tag:"IT Infrastructure", year:"2024", category:"Enterprise",
     tech:["Next.js","Node.js","AWS","PostgreSQL"],
     metrics:[{val:"99.9%",label:"Uptime SLA"},{val:"40%",label:"Cost Reduced"},{val:"3×",label:"Faster Deploy"}],
     shape:"icosahedron",
+    sceneAccent:"#4F8EF7",
   },
   {
     id:"vendo",
     title:"Vendo",
     subtitle:"Modern eCommerce Platform",
     desc:"A responsive eCommerce frontend engineered for seamless shopping. Dynamic product grids, category browsing, intelligent search, and fully optimised responsive design.",
-    images:["/vendo1.jpg","/vendo2.jpg","/vendo3.jpg"],
     link:"https://my-ecommerce-nine-iota.vercel.app/",
     color:"#38BDF8", gradFrom:"#38BDF8", gradTo:"#0891B2",
     tag:"eCommerce", year:"2024", category:"Product",
     tech:["React","Tailwind CSS","Stripe","Vercel"],
     metrics:[{val:"3×",label:"Conversion"},{val:"0.8s",label:"Load Time"},{val:"98",label:"Lighthouse"}],
     shape:"torus",
+    sceneAccent:"#38BDF8",
   },
   {
     id:"weareiko",
     title:"WearEiko",
     subtitle:"African-Inspired Fashion Brand",
     desc:"WearEiko blends African heritage with modern fashion, empowering self-expression through timeless, culturally-rooted designs. Every garment tells a story of identity and creativity.",
-    images:["/wear2.jpg","/wear1.jpg","/wear3.jpg"],
     link:"https://weareiko.com",
     color:"#818CF8", gradFrom:"#818CF8", gradTo:"#4F46E5",
     tag:"Fashion & Lifestyle", year:"2023", category:"Brand",
     tech:["Shopify","Custom Theme","Klaviyo","SEO"],
     metrics:[{val:"5×",label:"ROI"},{val:"200%",label:"Traffic Up"},{val:"4.9★",label:"Rating"}],
     shape:"octahedron",
+    sceneAccent:"#818CF8",
   },
 ];
 
-const toRgb = h => [parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)].join(",");
+const STATS = [
+  {val:"500+", label:"Projects Delivered", color:C.o1},
+  {val:"30+",  label:"Countries Served",   color:C.accent},
+  {val:"99%",  label:"Client Satisfaction",color:C.accentAlt},
+  {val:"8+",   label:"Years of Excellence",color:C.o2},
+];
 
-/* ─── Hex Pattern ────────────────────────────────────────────────────── */
+/* ─── Helpers ────────────────────────────────────────────────────────── */
 const HexPattern = () => (
   <svg aria-hidden="true" style={{position:"absolute",inset:0,width:"100%",height:"100%",zIndex:0,pointerEvents:"none",opacity:0.04}}>
     <defs>
@@ -78,73 +83,349 @@ const Divider = () => (
   </div>
 );
 
-/* ─── Per-Card 3D Scene ──────────────────────────────────────────────── */
-const CardScene = ({ color, shape, active }) => {
+/* ─── Shared canvas scaffold ─────────────────────────────────────────── */
+const useThreeCanvas = (buildScene) => {
   const mountRef = useRef(null);
   const canvasRef = useRef(null);
-  const activeRef = useRef(active);
-  useEffect(()=>{ activeRef.current = active; },[active]);
-
   useEffect(()=>{
-    const mount = mountRef.current, canvas = canvasRef.current;
+    const mount=mountRef.current, canvas=canvasRef.current;
     if(!mount||!canvas) return;
     let renderer=null, animId=null;
-
     const init=()=>{
       if(renderer) return;
-      const W=mount.clientWidth||260, H=mount.clientHeight||200;
+      const W=mount.clientWidth||400, H=mount.clientHeight||260;
       renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true});
       renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
       renderer.setSize(W,H); renderer.setClearColor(0x000000,0);
-      const scene=new THREE.Scene();
-      const cam=new THREE.PerspectiveCamera(50,W/H,0.1,100); cam.position.z=4.2;
-      const hexCol=parseInt(color.replace("#",""),16);
-      const col3=new THREE.Color(color);
-      scene.add(new THREE.AmbientLight(0xd0e8ff,0.30));
-      const pl1=new THREE.PointLight(col3,8,22); pl1.position.set(3,3,3); scene.add(pl1);
-      const pl2=new THREE.PointLight(0xffffff,2,18); pl2.position.set(-2,-1.5,2); scene.add(pl2);
-      const plRim=new THREE.PointLight(col3,3,16); plRim.position.set(0,-2.5,-2); scene.add(plRim);
-      const GEO={torus:()=>new THREE.TorusGeometry(0.78,0.30,22,90),octahedron:()=>new THREE.OctahedronGeometry(1.0,0),sphere:()=>new THREE.SphereGeometry(0.9,32,32),icosahedron:()=>new THREE.IcosahedronGeometry(0.95,1)};
-      const geo=(GEO[shape]||GEO.icosahedron)();
-      const mesh=new THREE.Mesh(geo,new THREE.MeshPhongMaterial({color:hexCol,emissive:hexCol,emissiveIntensity:0.26,specular:0xffffff,shininess:220,transparent:true,opacity:0.92})); scene.add(mesh);
-      const wire=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({color:hexCol,wireframe:true,transparent:true,opacity:0.18})); wire.scale.setScalar(1.05); scene.add(wire);
-      const inner=new THREE.Mesh(new THREE.SphereGeometry(0.44,24,24),new THREE.MeshPhongMaterial({color:hexCol,emissive:hexCol,emissiveIntensity:1.0,transparent:true,opacity:0.28})); scene.add(inner);
-      const rA=new THREE.Mesh(new THREE.TorusGeometry(1.55,0.024,14,100),new THREE.MeshPhongMaterial({color:hexCol,emissive:hexCol,emissiveIntensity:0.5,transparent:true,opacity:0.62})); rA.rotation.x=Math.PI/2.8; scene.add(rA);
-      const rB=new THREE.Mesh(new THREE.TorusGeometry(1.9,0.014,12,80),new THREE.MeshPhongMaterial({color:hexCol,emissive:hexCol,emissiveIntensity:0.32,transparent:true,opacity:0.40})); rB.rotation.x=Math.PI/5; rB.rotation.z=Math.PI/6; scene.add(rB);
-      const sats=[{r:1.65,spd:0.55,y:0.3,p:0},{r:1.80,spd:-0.38,y:-0.4,p:2.1},{r:1.55,spd:0.72,y:0.6,p:4.2}].map(d=>{const s=new THREE.Mesh(new THREE.SphereGeometry(0.07,14,14),new THREE.MeshPhongMaterial({color:hexCol,emissive:hexCol,emissiveIntensity:0.9}));s.userData={...d,angle:d.p};scene.add(s);return s;});
-      const pCount=48,pPos=new Float32Array(pCount*3);
-      for(let i=0;i<pCount;i++){const a=(i/pCount)*Math.PI*2,r=2.1+Math.random()*0.7;pPos[i*3]=Math.cos(a)*r;pPos[i*3+1]=(Math.random()-0.5)*1.4;pPos[i*3+2]=Math.sin(a)*r;}
-      const pGeo=new THREE.BufferGeometry(); pGeo.setAttribute("position",new THREE.BufferAttribute(pPos,3));
-      const pts=new THREE.Points(pGeo,new THREE.PointsMaterial({color:hexCol,size:0.055,transparent:true,opacity:0.70})); scene.add(pts);
-      const onResize=()=>{if(!renderer)return;renderer.setSize(mount.clientWidth,mount.clientHeight);cam.aspect=mount.clientWidth/mount.clientHeight;cam.updateProjectionMatrix();};
+      const onResize=()=>{if(!renderer)return;renderer.setSize(mount.clientWidth,mount.clientHeight);};
       window.addEventListener("resize",onResize);
-      const tv=new THREE.Vector3(), t0=performance.now();
-      const animate=()=>{
-        animId=requestAnimationFrame(animate);
-        const t=(performance.now()-t0)*0.001, a=activeRef.current, spd=a?1.8:0.6;
-        mesh.rotation.y=t*spd*0.52; mesh.rotation.x=Math.sin(t*0.32)*0.30;
-        wire.rotation.y=mesh.rotation.y; wire.rotation.x=mesh.rotation.x;
-        const ts=a?1.15:1.0; mesh.scale.lerp(tv.set(ts,ts,ts),0.06); wire.scale.setScalar(mesh.scale.x*1.05);
-        inner.scale.setScalar(1+Math.sin(t*1.9)*0.13);
-        rA.rotation.z=t*0.38; rA.rotation.y=t*0.12;
-        rB.rotation.x=Math.PI/5+t*0.25; rB.rotation.z=Math.PI/6+t*0.10;
-        sats.forEach(s=>{s.userData.angle+=s.userData.spd*0.014;s.position.x=Math.cos(s.userData.angle)*s.userData.r;s.position.z=Math.sin(s.userData.angle)*s.userData.r;s.position.y=s.userData.y+Math.sin(t*1.1+s.userData.angle)*0.28;});
-        pts.rotation.y=t*0.18;
-        pl1.position.set(Math.sin(t*0.55)*3,Math.cos(t*0.38)*2.5,3);
-        plRim.position.set(Math.cos(t*0.45)*-2.5,-2.5,Math.sin(t*0.62)*-2);
-        renderer.render(scene,cam);
-      };
-      animate();
-      return()=>{cancelAnimationFrame(animId);window.removeEventListener("resize",onResize);renderer.dispose();renderer=null;};
+      const stop=buildScene(renderer,W,H,(id)=>{animId=id;});
+      return()=>{if(stop)stop();cancelAnimationFrame(animId);window.removeEventListener("resize",onResize);renderer.dispose();renderer=null;};
     };
-
     let cleanup=null;
-    const obs=new IntersectionObserver(([e])=>{if(e.isIntersecting&&!cleanup)cleanup=init();else if(!e.isIntersecting&&cleanup){cleanup();cleanup=null;}},{threshold:0.01,rootMargin:"150px"});
+    const obs=new IntersectionObserver(([e])=>{
+      if(e.isIntersecting&&!cleanup)cleanup=init();
+      else if(!e.isIntersecting&&cleanup){cleanup();cleanup=null;}
+    },{threshold:0.01,rootMargin:"150px"});
     obs.observe(canvas);
     return()=>{obs.disconnect();cleanup?.();};
-  },[color,shape]);
+  },[]);
+  return {mountRef,canvasRef};
+};
 
+/* ══════════════════════════════════════════════════════════════════════
+   CONOTEX — Big Tech USA
+   Scene: morphing server cluster — interconnected nodes + data streams
+   + a central AI brain (morphing icosahedron) + satellite micro-chips
+════════════════════════════════════════════════════════════════════════ */
+const TechScene = ({ active }) => {
+  const activeRef=useRef(active);
+  useEffect(()=>{activeRef.current=active;},[active]);
+  const {mountRef,canvasRef}=useThreeCanvas((renderer,W,H,setId)=>{
+    const scene=new THREE.Scene();
+    const cam=new THREE.PerspectiveCamera(52,W/H,0.1,100); cam.position.z=5.5;
+    const col=0x4F8EF7, col2=0x38BDF8, col3=0x818CF8;
+
+    scene.add(new THREE.AmbientLight(0xd0e8ff,0.25));
+    const pl1=new THREE.PointLight(col,10,26); pl1.position.set(4,4,4); scene.add(pl1);
+    const pl2=new THREE.PointLight(col2,5,20); pl2.position.set(-3,2,2); scene.add(pl2);
+    const pl3=new THREE.PointLight(col3,4,18); pl3.position.set(0,-3,-2); scene.add(pl3);
+
+    /* Central AI brain — morphing icosahedron */
+    const braGeo=new THREE.IcosahedronGeometry(0.95,2);
+    const origPos=new Float32Array(braGeo.attributes.position.array);
+    const tmpPos=new Float32Array(origPos.length);
+    const brain=new THREE.Mesh(braGeo,new THREE.MeshPhongMaterial({color:col,emissive:col,emissiveIntensity:0.28,specular:0xffffff,shininess:240,transparent:true,opacity:0.92}));
+    scene.add(brain);
+    const brainWire=new THREE.Mesh(braGeo,new THREE.MeshBasicMaterial({color:col,wireframe:true,transparent:true,opacity:0.20}));
+    brainWire.scale.setScalar(1.04); scene.add(brainWire);
+    const glow=new THREE.Mesh(new THREE.SphereGeometry(0.46,24,24),new THREE.MeshPhongMaterial({color:col,emissive:col,emissiveIntensity:1.0,transparent:true,opacity:0.26}));
+    scene.add(glow);
+
+    /* Server nodes — 6 boxes representing server racks orbiting the brain */
+    const serverMat=new THREE.MeshPhongMaterial({color:col2,emissive:col2,emissiveIntensity:0.30,specular:0xffffff,shininess:180,transparent:true,opacity:0.85});
+    const servers=[
+      {r:1.80,spd:0.42,y:0.0, p:0,   w:0.30,h:0.18,d:0.18},
+      {r:1.70,spd:-0.35,y:0.5,p:1.05,w:0.22,h:0.30,d:0.14},
+      {r:1.90,spd:0.28,y:-0.4,p:2.1, w:0.28,h:0.14,d:0.22},
+      {r:1.75,spd:-0.50,y:0.3,p:3.15,w:0.18,h:0.28,d:0.14},
+      {r:1.85,spd:0.38,y:-0.2,p:4.2, w:0.26,h:0.16,d:0.20},
+      {r:1.65,spd:-0.30,y:0.6,p:5.25,w:0.16,h:0.26,d:0.18},
+    ].map(d=>{
+      const s=new THREE.Mesh(new THREE.BoxGeometry(d.w,d.h,d.d),serverMat.clone());
+      s.userData={...d,angle:d.p}; scene.add(s); return s;
+    });
+
+    /* Connection lines between brain and each server */
+    const connLines=servers.map(()=>{
+      const geo=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),new THREE.Vector3()]);
+      const line=new THREE.Line(geo,new THREE.LineBasicMaterial({color:col,transparent:true,opacity:0.18}));
+      scene.add(line); return line;
+    });
+
+    /* Data stream particles travelling along each connection */
+    const streamParticles=servers.map(()=>{
+      const m=new THREE.Mesh(new THREE.SphereGeometry(0.04,8,8),new THREE.MeshPhongMaterial({color:col2,emissive:col2,emissiveIntensity:1.0}));
+      m.userData={phase:Math.random()}; scene.add(m); return m;
+    });
+
+    /* Orbital ring representing network perimeter */
+    const netRing=new THREE.Mesh(new THREE.TorusGeometry(2.3,0.018,12,100),new THREE.MeshPhongMaterial({color:col,emissive:col,emissiveIntensity:0.4,transparent:true,opacity:0.45}));
+    netRing.rotation.x=Math.PI/2.5; scene.add(netRing);
+    const netRing2=new THREE.Mesh(new THREE.TorusGeometry(2.7,0.010,10,80),new THREE.MeshPhongMaterial({color:col3,emissive:col3,emissiveIntensity:0.3,transparent:true,opacity:0.28}));
+    netRing2.rotation.x=Math.PI/5; netRing2.rotation.z=Math.PI/4; scene.add(netRing2);
+
+    /* Micro-chips (flat cylinders) orbiting the outer ring */
+    const chips=[0,1,2,3].map(i=>{
+      const c=new THREE.Mesh(new THREE.CylinderGeometry(0.10,0.10,0.04,8),new THREE.MeshPhongMaterial({color:col3,emissive:col3,emissiveIntensity:0.5,shininess:300}));
+      c.userData={angle:(i/4)*Math.PI*2,r:2.3,spd:0.20*(i%2?1:-1)};
+      scene.add(c); return c;
+    });
+
+    /* Background particle cloud */
+    const pCount=80,pPos=new Float32Array(pCount*3);
+    for(let i=0;i<pCount;i++){const a=(i/pCount)*Math.PI*2,r=3.0+Math.random()*1.2;pPos[i*3]=Math.cos(a)*r;pPos[i*3+1]=(Math.random()-0.5)*2.2;pPos[i*3+2]=Math.sin(a)*r;}
+    const pts=new THREE.Points(new THREE.BufferGeometry().setAttribute("position",new THREE.BufferAttribute(pPos,3)),new THREE.PointsMaterial({color:col,size:0.04,transparent:true,opacity:0.55}));
+    scene.add(pts);
+
+    const tv=new THREE.Vector3();
+    const t0=performance.now();
+    const animate=()=>{
+      const id=requestAnimationFrame(animate); setId(id);
+      const t=(performance.now()-t0)*0.001, a=activeRef.current, spd=a?1.9:0.60;
+
+      /* Morph brain */
+      for(let i=0;i<origPos.length;i+=3){const ox=origPos[i],oy=origPos[i+1],oz=origPos[i+2];const len=Math.sqrt(ox*ox+oy*oy+oz*oz);const wave=Math.sin(t*1.4+ox*2.1+oy*1.8)*0.055;const sc=(0.95+wave)/len;tmpPos[i]=ox*sc;tmpPos[i+1]=oy*sc;tmpPos[i+2]=oz*sc;}
+      braGeo.attributes.position.array.set(tmpPos); braGeo.attributes.position.needsUpdate=true; braGeo.computeVertexNormals();
+      brain.rotation.y=t*spd*0.40; brain.rotation.x=Math.sin(t*0.28)*0.22;
+      brainWire.rotation.y=brain.rotation.y; brainWire.rotation.x=brain.rotation.x;
+      const ts=a?1.15:1.0; brain.scale.lerp(tv.set(ts,ts,ts),0.06);
+      glow.scale.setScalar(1+Math.sin(t*1.8)*0.13);
+
+      servers.forEach((s,i)=>{
+        s.userData.angle+=s.userData.spd*0.012;
+        s.position.x=Math.cos(s.userData.angle)*s.userData.r;
+        s.position.z=Math.sin(s.userData.angle)*s.userData.r;
+        s.position.y=s.userData.y+Math.sin(t*0.9+s.userData.angle)*0.22;
+        s.rotation.y=t*1.2; s.rotation.x=t*0.6;
+        /* Update connection line */
+        const arr=connLines[i].geometry.attributes.position.array;
+        arr[0]=0;arr[1]=0;arr[2]=0;arr[3]=s.position.x;arr[4]=s.position.y;arr[5]=s.position.z;
+        connLines[i].geometry.attributes.position.needsUpdate=true;
+        /* Data stream particle */
+        const ph=(streamParticles[i].userData.phase+t*0.4)%1;
+        streamParticles[i].position.x=s.position.x*ph;
+        streamParticles[i].position.y=s.position.y*ph;
+        streamParticles[i].position.z=s.position.z*ph;
+      });
+
+      chips.forEach(c=>{c.userData.angle+=c.userData.spd*0.014;c.position.x=Math.cos(c.userData.angle)*c.userData.r;c.position.z=Math.sin(c.userData.angle)*c.userData.r;c.position.y=Math.sin(c.userData.angle*2)*0.3;c.rotation.y=t*2;});
+      netRing.rotation.z=t*0.14; netRing2.rotation.y=t*0.10; netRing2.rotation.x=Math.PI/5+t*0.08;
+      pts.rotation.y=t*0.12;
+      pl1.position.set(Math.sin(t*0.5)*4,Math.cos(t*0.38)*3.5,4);
+      renderer.render(scene,cam);
+    };
+    animate();
+  });
   return <div ref={mountRef} style={{width:"100%",height:"100%"}}><canvas ref={canvasRef} style={{width:"100%",height:"100%",display:"block"}}/></div>;
+};
+
+/* ══════════════════════════════════════════════════════════════════════
+   VENDO — Big eCommerce Store
+   Scene: shopping bag + orbiting product cubes + coin/currency rings
+   + floating price tags + cart wheel
+════════════════════════════════════════════════════════════════════════ */
+const EcommerceScene = ({ active }) => {
+  const activeRef=useRef(active);
+  useEffect(()=>{activeRef.current=active;},[active]);
+  const {mountRef,canvasRef}=useThreeCanvas((renderer,W,H,setId)=>{
+    const scene=new THREE.Scene();
+    const cam=new THREE.PerspectiveCamera(52,W/H,0.1,100); cam.position.z=5.5;
+    const col=0x38BDF8, col2=0x4F8EF7, col3=0x93BBFF;
+
+    scene.add(new THREE.AmbientLight(0xd0f8ff,0.28));
+    const pl1=new THREE.PointLight(col,10,26); pl1.position.set(3,4,4); scene.add(pl1);
+    const pl2=new THREE.PointLight(col2,5,20); pl2.position.set(-3,2,2); scene.add(pl2);
+    const pl3=new THREE.PointLight(0xffffff,3,18); pl3.position.set(0,-3,2); scene.add(pl3);
+
+    /* Central shopping bag body — tapered box */
+    const bagGroup=new THREE.Group(); scene.add(bagGroup);
+    const bagBody=new THREE.Mesh(new THREE.BoxGeometry(1.1,1.3,0.55),new THREE.MeshPhongMaterial({color:col,emissive:col,emissiveIntensity:0.22,specular:0xffffff,shininess:260,transparent:true,opacity:0.90}));
+    bagGroup.add(bagBody);
+    /* Bag handle — torus sitting on top */
+    const handle=new THREE.Mesh(new THREE.TorusGeometry(0.28,0.06,10,40),new THREE.MeshPhongMaterial({color:col2,emissive:col2,emissiveIntensity:0.30,shininess:200,transparent:true,opacity:0.88}));
+    handle.position.y=0.82; handle.rotation.x=Math.PI/2; bagGroup.add(handle);
+    /* Bag wireframe */
+    const bagWire=new THREE.Mesh(new THREE.BoxGeometry(1.1,1.3,0.55),new THREE.MeshBasicMaterial({color:col,wireframe:true,transparent:true,opacity:0.15}));
+    bagWire.scale.setScalar(1.04); bagGroup.add(bagWire);
+
+    /* Inner glow */
+    const inner=new THREE.Mesh(new THREE.SphereGeometry(0.38,20,20),new THREE.MeshPhongMaterial({color:col,emissive:col,emissiveIntensity:1.0,transparent:true,opacity:0.22}));
+    bagGroup.add(inner);
+
+    /* Product cubes — 5 different sized cubes orbiting like catalogue items */
+    const prodColors=[col,col2,col3,0x0891B2,col];
+    const products=[
+      {r:1.85,spd:0.38,y:0.2, p:0,   s:[0.28,0.36,0.22]},
+      {r:1.75,spd:-0.30,y:-0.3,p:1.26,s:[0.32,0.24,0.28]},
+      {r:1.90,spd:0.25,y:0.5, p:2.51,s:[0.22,0.32,0.24]},
+      {r:1.70,spd:-0.42,y:-0.1,p:3.77,s:[0.30,0.28,0.20]},
+      {r:1.80,spd:0.34,y:0.3, p:5.03,s:[0.24,0.30,0.26]},
+    ].map((d,i)=>{
+      const m=new THREE.Mesh(new THREE.BoxGeometry(...d.s),new THREE.MeshPhongMaterial({color:prodColors[i],emissive:prodColors[i],emissiveIntensity:0.28,specular:0xffffff,shininess:200,transparent:true,opacity:0.86}));
+      m.userData={...d,angle:d.p}; scene.add(m); return m;
+    });
+
+    /* Coin/currency rings — two flat torus rings representing transactions */
+    const coin1=new THREE.Mesh(new THREE.TorusGeometry(2.1,0.022,12,90),new THREE.MeshPhongMaterial({color:col,emissive:col,emissiveIntensity:0.45,transparent:true,opacity:0.55}));
+    coin1.rotation.x=Math.PI/2.2; scene.add(coin1);
+    const coin2=new THREE.Mesh(new THREE.TorusGeometry(2.55,0.014,10,80),new THREE.MeshPhongMaterial({color:col3,emissive:col3,emissiveIntensity:0.30,transparent:true,opacity:0.35}));
+    coin2.rotation.x=Math.PI/3; coin2.rotation.z=Math.PI/6; scene.add(coin2);
+
+    /* Cart wheels — small torus rings orbiting fast representing the cart */
+    const wheels=[0,1].map(i=>{
+      const w=new THREE.Mesh(new THREE.TorusGeometry(0.18,0.06,10,32),new THREE.MeshPhongMaterial({color:col2,emissive:col2,emissiveIntensity:0.45,shininess:220}));
+      w.userData={angle:(i/2)*Math.PI*2,r:0.65,spd:2.2*(i%2?1:-1)};
+      bagGroup.add(w); return w;
+    });
+
+    /* Price tag diamonds — octahedrons floating around */
+    const tags=[0,1,2].map(i=>{
+      const m=new THREE.Mesh(new THREE.OctahedronGeometry(0.09,0),new THREE.MeshPhongMaterial({color:col3,emissive:col3,emissiveIntensity:0.8,shininess:300}));
+      m.userData={angle:(i/3)*Math.PI*2,r:2.1,spd:0.18,yOff:(i-1)*0.5};
+      scene.add(m); return m;
+    });
+
+    /* Particle halo */
+    const pCount=70,pPos=new Float32Array(pCount*3);
+    for(let i=0;i<pCount;i++){const a=(i/pCount)*Math.PI*2,r=2.8+Math.random()*1.0;pPos[i*3]=Math.cos(a)*r;pPos[i*3+1]=(Math.random()-0.5)*2.0;pPos[i*3+2]=Math.sin(a)*r;}
+    const pts=new THREE.Points(new THREE.BufferGeometry().setAttribute("position",new THREE.BufferAttribute(pPos,3)),new THREE.PointsMaterial({color:col,size:0.04,transparent:true,opacity:0.55}));
+    scene.add(pts);
+
+    const tv=new THREE.Vector3();
+    const t0=performance.now();
+    const animate=()=>{
+      const id=requestAnimationFrame(animate); setId(id);
+      const t=(performance.now()-t0)*0.001, a=activeRef.current, spd=a?1.8:0.55;
+      const ts=a?1.12:1.0;
+      bagGroup.rotation.y=t*spd*0.35; bagGroup.rotation.x=Math.sin(t*0.28)*0.16;
+      bagGroup.scale.lerp(tv.set(ts,ts,ts),0.06);
+      inner.scale.setScalar(1+Math.sin(t*1.6)*0.12);
+      wheels.forEach(w=>{w.userData.angle+=w.userData.spd*0.014;w.position.x=Math.cos(w.userData.angle)*w.userData.r;w.position.y=-0.72;w.position.z=Math.sin(w.userData.angle)*w.userData.r;w.rotation.z=t*3;});
+      products.forEach(m=>{m.userData.angle+=m.userData.spd*0.012;m.position.x=Math.cos(m.userData.angle)*m.userData.r;m.position.z=Math.sin(m.userData.angle)*m.userData.r;m.position.y=m.userData.y+Math.sin(t*0.8+m.userData.angle)*0.22;m.rotation.y=t*1.5;m.rotation.x=t*0.8;});
+      tags.forEach(g=>{g.userData.angle+=g.userData.spd*0.015;g.position.x=Math.cos(g.userData.angle)*g.userData.r;g.position.z=Math.sin(g.userData.angle)*g.userData.r;g.position.y=g.userData.yOff+Math.sin(t*1.2)*0.18;g.rotation.y=t*2.5;});
+      coin1.rotation.z=t*0.18; coin2.rotation.y=t*0.14; coin2.rotation.x=Math.PI/3+t*0.10;
+      pts.rotation.y=t*0.11;
+      pl1.position.set(Math.sin(t*0.5)*3.5,Math.cos(t*0.38)*3,4);
+      renderer.render(scene,cam);
+    };
+    animate();
+  });
+  return <div ref={mountRef} style={{width:"100%",height:"100%"}}><canvas ref={canvasRef} style={{width:"100%",height:"100%",display:"block"}}/></div>;
+};
+
+/* ══════════════════════════════════════════════════════════════════════
+   WEAREIKO — Big Fashion House
+   Scene: elegant dress form silhouette (capsule + cone) with orbiting
+   fabric swatches (flat discs), jewellery rings, gem stones, runway particles
+════════════════════════════════════════════════════════════════════════ */
+const FashionScene = ({ active }) => {
+  const activeRef=useRef(active);
+  useEffect(()=>{activeRef.current=active;},[active]);
+  const {mountRef,canvasRef}=useThreeCanvas((renderer,W,H,setId)=>{
+    const scene=new THREE.Scene();
+    const cam=new THREE.PerspectiveCamera(52,W/H,0.1,100); cam.position.z=5.5;
+    const col=0x818CF8, col2=0xA78BFA, col3=0xC4B5FD;
+
+    scene.add(new THREE.AmbientLight(0xf0e8ff,0.30));
+    const pl1=new THREE.PointLight(col,10,26); pl1.position.set(3,4,4); scene.add(pl1);
+    const pl2=new THREE.PointLight(col2,5,20); pl2.position.set(-3,2,2); scene.add(pl2);
+    const pl3=new THREE.PointLight(col3,3,18); pl3.position.set(0,-3,2); scene.add(pl3);
+
+    /* Dress form — torso shape built from a tapered cylinder (bodice) + sphere (neckline) */
+    const formGroup=new THREE.Group(); scene.add(formGroup);
+    const bodice=new THREE.Mesh(new THREE.CylinderGeometry(0.52,0.70,1.40,32),new THREE.MeshPhongMaterial({color:col,emissive:col,emissiveIntensity:0.24,specular:0xffffff,shininess:280,transparent:true,opacity:0.88}));
+    formGroup.add(bodice);
+    const neckline=new THREE.Mesh(new THREE.SphereGeometry(0.32,24,24),new THREE.MeshPhongMaterial({color:col2,emissive:col2,emissiveIntensity:0.35,specular:0xffffff,shininess:320,transparent:true,opacity:0.90}));
+    neckline.position.y=0.88; formGroup.add(neckline);
+    const skirt=new THREE.Mesh(new THREE.CylinderGeometry(0.70,1.15,0.90,32),new THREE.MeshPhongMaterial({color:col3,emissive:col3,emissiveIntensity:0.18,specular:0xffffff,shininess:220,transparent:true,opacity:0.82}));
+    skirt.position.y=-1.05; formGroup.add(skirt);
+    /* Wireframe overlay */
+    const bodyWire=new THREE.Mesh(new THREE.CylinderGeometry(0.52,0.70,1.40,32),new THREE.MeshBasicMaterial({color:col,wireframe:true,transparent:true,opacity:0.18}));
+    bodyWire.scale.setScalar(1.03); formGroup.add(bodyWire);
+    /* Inner glow */
+    const inner=new THREE.Mesh(new THREE.SphereGeometry(0.38,20,20),new THREE.MeshPhongMaterial({color:col,emissive:col,emissiveIntensity:0.9,transparent:true,opacity:0.22}));
+    inner.position.y=0.0; formGroup.add(inner);
+
+    /* Fabric swatches — flat discs orbiting like floating fabric panels */
+    const swatchCols=[col,col2,col3,0x7C3AED,col];
+    const swatches=[
+      {r:1.90,spd:0.30,y:0.1, p:0,   rx:Math.PI/2.5,rz:0.2},
+      {r:1.80,spd:-0.24,y:0.5,p:1.26,rx:Math.PI/3,  rz:0.5},
+      {r:1.95,spd:0.20,y:-0.3,p:2.51,rx:Math.PI/4,  rz:-0.3},
+      {r:1.75,spd:-0.32,y:0.3,p:3.77,rx:Math.PI/2,  rz:0.4},
+      {r:1.88,spd:0.26,y:-0.1,p:5.03,rx:Math.PI/3.5,rz:-0.5},
+    ].map((d,i)=>{
+      const m=new THREE.Mesh(new THREE.CylinderGeometry(0.24,0.24,0.04,32),new THREE.MeshPhongMaterial({color:swatchCols[i],emissive:swatchCols[i],emissiveIntensity:0.28,specular:0xffffff,shininess:180,transparent:true,opacity:0.80}));
+      m.userData={...d,angle:d.p}; scene.add(m); return m;
+    });
+
+    /* Jewellery rings — large elegant tori representing necklaces/bangles */
+    const jwl1=new THREE.Mesh(new THREE.TorusGeometry(2.0,0.026,14,100),new THREE.MeshPhongMaterial({color:col2,emissive:col2,emissiveIntensity:0.48,transparent:true,opacity:0.60}));
+    jwl1.rotation.x=Math.PI/2.2; scene.add(jwl1);
+    const jwl2=new THREE.Mesh(new THREE.TorusGeometry(2.45,0.016,12,80),new THREE.MeshPhongMaterial({color:col3,emissive:col3,emissiveIntensity:0.32,transparent:true,opacity:0.38}));
+    jwl2.rotation.x=Math.PI/4; jwl2.rotation.z=Math.PI/5; scene.add(jwl2);
+    const jwl3=new THREE.Mesh(new THREE.TorusGeometry(1.58,0.012,10,60),new THREE.MeshPhongMaterial({color:col,emissive:col,emissiveIntensity:0.36,transparent:true,opacity:0.42}));
+    jwl3.rotation.x=Math.PI/6; jwl3.rotation.z=-Math.PI/4; scene.add(jwl3);
+
+    /* Gemstones — octahedrons floating like diamonds/jewels */
+    const gems=[0,1,2,3,4].map(i=>{
+      const m=new THREE.Mesh(new THREE.OctahedronGeometry(0.09,0),new THREE.MeshPhongMaterial({color:col3,emissive:col3,emissiveIntensity:0.9,specular:0xffffff,shininess:400}));
+      m.userData={angle:(i/5)*Math.PI*2,r:1.58+Math.random()*0.5,spd:0.22*(i%2?1:-1),yOff:(i/5-0.4)*1.2};
+      scene.add(m); return m;
+    });
+
+    /* Runway particles — elongated vertical points suggesting a catwalk */
+    const pCount=90,pPos=new Float32Array(pCount*3);
+    for(let i=0;i<pCount;i++){
+      const a=(i/pCount)*Math.PI*2,r=2.8+Math.random()*1.1;
+      pPos[i*3]=Math.cos(a)*r; pPos[i*3+1]=(Math.random()-0.5)*3.5; pPos[i*3+2]=Math.sin(a)*r;
+    }
+    const pts=new THREE.Points(new THREE.BufferGeometry().setAttribute("position",new THREE.BufferAttribute(pPos,3)),new THREE.PointsMaterial({color:col,size:0.038,transparent:true,opacity:0.52}));
+    scene.add(pts);
+
+    const tv=new THREE.Vector3();
+    const t0=performance.now();
+    const animate=()=>{
+      const id=requestAnimationFrame(animate); setId(id);
+      const t=(performance.now()-t0)*0.001, a=activeRef.current, spd=a?1.6:0.48;
+      const ts=a?1.12:1.0;
+      /* Dress form sways gracefully */
+      formGroup.rotation.y=t*spd*0.28;
+      formGroup.rotation.z=Math.sin(t*0.40)*0.06;
+      formGroup.scale.lerp(tv.set(ts,ts,ts),0.05);
+      inner.scale.setScalar(1+Math.sin(t*1.5)*0.12);
+      /* Fabric swatches drift */
+      swatches.forEach(s=>{s.userData.angle+=s.userData.spd*0.012;s.position.x=Math.cos(s.userData.angle)*s.userData.r;s.position.z=Math.sin(s.userData.angle)*s.userData.r;s.position.y=s.userData.y+Math.sin(t*0.7+s.userData.angle)*0.28;s.rotation.y=t*0.9;s.rotation.x=s.userData.rx+Math.sin(t*0.5)*0.15;});
+      /* Jewellery rings */
+      jwl1.rotation.z=t*0.16; jwl2.rotation.y=t*0.12; jwl2.rotation.x=Math.PI/4+t*0.08; jwl3.rotation.z=t*0.20; jwl3.rotation.y=t*0.10;
+      /* Gemstones sparkle */
+      gems.forEach(g=>{g.userData.angle+=g.userData.spd*0.014;g.position.x=Math.cos(g.userData.angle)*g.userData.r;g.position.z=Math.sin(g.userData.angle)*g.userData.r;g.position.y=g.userData.yOff+Math.sin(t*1.4+g.userData.angle)*0.20;g.rotation.y=t*3;g.rotation.x=t*1.5;});
+      pts.rotation.y=t*0.10;
+      pl1.position.set(Math.sin(t*0.45)*3.5,Math.cos(t*0.35)*3,4);
+      renderer.render(scene,cam);
+    };
+    animate();
+  });
+  return <div ref={mountRef} style={{width:"100%",height:"100%"}}><canvas ref={canvasRef} style={{width:"100%",height:"100%",display:"block"}}/></div>;
+};
+
+/* ─── Scene router — picks the right scene per project id ────────────── */
+const ProjectScene = ({ id, color, active }) => {
+  if (id==="conotex") return <TechScene active={active}/>;
+  if (id==="vendo")   return <EcommerceScene active={active}/>;
+  if (id==="weareiko")return <FashionScene active={active}/>;
+  return <TechScene active={active}/>;
 };
 
 /* ─── Hero Banner 3D ─────────────────────────────────────────────────── */
@@ -207,93 +488,78 @@ const HeroBanner = () => {
   return <canvas ref={canvasRef} style={{width:"100%",height:"100%",display:"block"}}/>;
 };
 
-/* ─── Image Carousel ─────────────────────────────────────────────────── */
-const Carousel = ({ images, color, title }) => {
-  const [idx,setIdx]=useState(0);
-  const [loaded,setLoaded]=useState(false);
-  const prev=useCallback(()=>{setLoaded(false);setIdx(i=>(i-1+images.length)%images.length);},[images.length]);
-  const next=useCallback(()=>{setLoaded(false);setIdx(i=>(i+1)%images.length);},[images.length]);
-  const aRgb=toRgb(color);
-  return(
-    <div style={{position:"relative",width:"100%",height:"100%",overflow:"hidden",background:C.bg1}}>
-      <img src={images[idx]} alt={`${title} screenshot ${idx+1}`} loading="lazy" onLoad={()=>setLoaded(true)}
-        style={{width:"100%",height:"100%",objectFit:"cover",opacity:loaded?1:0,transition:"opacity 0.45s ease",display:"block"}}/>
-      <div style={{position:"absolute",inset:0,background:"linear-gradient(to bottom,rgba(8,10,15,0.04) 0%,transparent 35%,rgba(8,10,15,0.55) 100%)",pointerEvents:"none"}}/>
-      {images.length>1&&<>
-        {[{side:"left",label:"‹",fn:prev},{side:"right",label:"›",fn:next}].map(({side,label,fn})=>(
-          <button key={side} onClick={fn} aria-label={`${side} image`} style={{position:"absolute",top:"50%",[side]:12,transform:"translateY(-50%)",zIndex:4,width:32,height:32,borderRadius:"50%",border:"1px solid rgba(255,255,255,0.18)",background:"rgba(8,10,15,0.65)",backdropFilter:"blur(8px)",color:"#fff",fontSize:19,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",outline:"none",transition:"background 0.2s ease"}}
-            onMouseEnter={e=>{e.currentTarget.style.background=`rgba(${aRgb},0.65)`;}}
-            onMouseLeave={e=>{e.currentTarget.style.background="rgba(8,10,15,0.65)";}}>{label}</button>
-        ))}
-        <div style={{position:"absolute",bottom:10,left:"50%",transform:"translateX(-50%)",zIndex:4,display:"flex",gap:5}}>
-          {images.map((_,i)=>(
-            <button key={i} onClick={()=>{setLoaded(false);setIdx(i);}} aria-label={`Image ${i+1}`} style={{height:5,borderRadius:3,width:i===idx?18:5,background:i===idx?color:"rgba(255,255,255,0.3)",border:"none",cursor:"pointer",padding:0,outline:"none",boxShadow:i===idx?`0 0 8px ${color}`:"none",transition:"all 0.3s ease"}}/>
-          ))}
-        </div>
-      </>}
-    </div>
-  );
-};
-
-/* ─── Project Card ───────────────────────────────────────────────────── */
+/* ─── Project Card — 3D scene fills the top half ────────────────────── */
 const ProjectCard = ({ project, index, visible }) => {
   const [hov,setHov]=useState(false);
   const [tab,setTab]=useState("overview");
-  const { title, subtitle, desc, images, link, color, gradFrom, gradTo, tag, year, tech, metrics, shape } = project;
+  const { title, subtitle, desc, link, color, gradFrom, gradTo, tag, year, category, tech, metrics, shape } = project;
 
   return(
     <article
       onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}
       style={{
-        position:"relative", borderRadius:18, overflow:"hidden", display:"flex", flexDirection:"column",
+        position:"relative", borderRadius:18, overflow:"hidden",
+        display:"flex", flexDirection:"column",
         background:hov?C.bg3:C.bg2,
         border:hov?`1px solid ${color}55`:"1px solid rgba(255,255,255,0.06)",
         transform:hov?"translateY(-10px) scale(1.012)":"none",
         transition:"all 0.4s cubic-bezier(0.23,1,0.32,1)",
-        boxShadow:hov?`0 20px 64px rgba(0,0,0,0.65),0 0 0 1px ${color}20,inset 0 1px 0 rgba(255,255,255,0.07)`:"0 4px 24px rgba(0,0,0,0.45),inset 0 1px 0 rgba(255,255,255,0.03)",
+        boxShadow:hov
+          ?`0 24px 72px rgba(0,0,0,0.70),0 0 0 1px ${color}22,inset 0 1px 0 rgba(255,255,255,0.08)`
+          :"0 4px 24px rgba(0,0,0,0.45),inset 0 1px 0 rgba(255,255,255,0.03)",
         opacity:visible?1:0,
         animation:visible?`pj_fadeUp 0.7s ease both ${index*150}ms`:"none",
         cursor:"default",
       }}
     >
+      {/* Top accent line */}
       <div style={{height:2.5,background:`linear-gradient(90deg,transparent,${color},transparent)`,flexShrink:0}}/>
-      {hov&&<div style={{position:"absolute",inset:0,background:`radial-gradient(ellipse at 50% 0%,${color}0e,transparent 60%)`,pointerEvents:"none",zIndex:0}}/>}
+      {hov&&<div style={{position:"absolute",inset:0,background:`radial-gradient(ellipse at 50% 20%,${color}10,transparent 65%)`,pointerEvents:"none",zIndex:0}}/>}
 
-      {/* Image + 3D split */}
-      <div className="pj-card-top">
-        <div className="pj-card-img" style={{position:"relative",overflow:"hidden"}}>
-          <Carousel images={images} color={color} title={title}/>
-          <div style={{position:"absolute",top:12,left:14,zIndex:6,display:"flex",alignItems:"center",gap:6,padding:"4px 11px",borderRadius:7,background:"rgba(8,10,15,0.82)",backdropFilter:"blur(12px)",border:`1px solid ${color}45`}}>
-            <span style={{width:5,height:5,borderRadius:"50%",background:color,boxShadow:`0 0 6px ${color}`,display:"inline-block"}}/>
-            <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:9,fontWeight:700,letterSpacing:"0.15em",textTransform:"uppercase",color}}>{tag}</span>
-          </div>
-          <div style={{position:"absolute",top:12,right:14,zIndex:6,padding:"4px 10px",borderRadius:6,background:"rgba(8,10,15,0.75)",backdropFilter:"blur(10px)",border:"1px solid rgba(255,255,255,0.1)",color:C.tf,fontSize:9,fontWeight:600,fontFamily:"'DM Sans',sans-serif",letterSpacing:"0.1em"}}>{year}</div>
+      {/* ── 3D Scene — full width, tall ── */}
+      <div style={{
+        width:"100%", height:"clamp(220px,32vw,300px)", flexShrink:0,
+        position:"relative", overflow:"hidden",
+        background:`radial-gradient(ellipse at 50% 55%,${color}14 0%,${C.bg1} 72%)`,
+      }}>
+        <ProjectScene id={project.id} color={color} active={hov}/>
+
+        {/* Scan line */}
+        <div style={{position:"absolute",inset:0,zIndex:2,pointerEvents:"none",overflow:"hidden"}}>
+          <div style={{position:"absolute",left:0,right:0,height:1,background:`linear-gradient(90deg,transparent,${color}60,transparent)`,animation:"pj_scanDown 5s linear infinite",opacity:0.45}}/>
         </div>
-        <div className="pj-card-3d" style={{position:"relative",background:`radial-gradient(ellipse at 50% 50%,${color}12 0%,${C.bg1} 70%)`}}>
-          <CardScene color={color} shape={shape} active={hov}/>
-          <div style={{position:"absolute",inset:0,zIndex:2,pointerEvents:"none",overflow:"hidden"}}>
-            <div style={{position:"absolute",left:0,right:0,height:1,background:`linear-gradient(90deg,transparent,${color}55,transparent)`,animation:"pj_scanDown 5s linear infinite",opacity:0.45}}/>
-          </div>
-          <div style={{position:"absolute",bottom:12,left:"50%",transform:"translateX(-50%)",zIndex:4,display:"flex",alignItems:"center",gap:5,padding:"4px 10px",borderRadius:6,background:"rgba(8,10,15,0.80)",backdropFilter:"blur(10px)",border:`1px solid rgba(79,142,247,0.28)`,whiteSpace:"nowrap"}}>
-            <span style={{width:5,height:5,borderRadius:"50%",background:C.o1,boxShadow:`0 0 7px ${C.o1}`,animation:"pj_pulse 2s ease-in-out infinite",display:"inline-block"}}/>
-            <span style={{color:C.o1,fontSize:8.5,fontWeight:700,letterSpacing:"0.15em",textTransform:"uppercase"}}>Interactive 3D</span>
-          </div>
+
+        {/* Top overlays */}
+        <div style={{position:"absolute",top:12,left:14,zIndex:6,display:"flex",alignItems:"center",gap:6,padding:"4px 11px",borderRadius:7,background:"rgba(8,10,15,0.84)",backdropFilter:"blur(12px)",border:`1px solid ${color}45`}}>
+          <span style={{width:5,height:5,borderRadius:"50%",background:color,boxShadow:`0 0 6px ${color}`,display:"inline-block"}}/>
+          <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:9,fontWeight:700,letterSpacing:"0.15em",textTransform:"uppercase",color}}>{tag}</span>
+        </div>
+        <div style={{position:"absolute",top:12,right:14,zIndex:6,padding:"4px 10px",borderRadius:6,background:"rgba(8,10,15,0.78)",backdropFilter:"blur(10px)",border:"1px solid rgba(255,255,255,0.10)",color:C.tf,fontSize:9,fontWeight:600,fontFamily:"'DM Sans',sans-serif"}}>{year}</div>
+
+        {/* Bottom overlays */}
+        <div style={{position:"absolute",bottom:12,left:14,zIndex:6,padding:"3px 9px",borderRadius:6,background:`${color}18`,border:`1px solid ${color}35`,color,fontSize:8.5,fontWeight:700,letterSpacing:"0.12em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}}>{category}</div>
+        <div style={{position:"absolute",bottom:12,left:"50%",transform:"translateX(-50%)",zIndex:6,display:"flex",alignItems:"center",gap:5,padding:"3px 10px",borderRadius:6,background:"rgba(8,10,15,0.82)",backdropFilter:"blur(10px)",border:`1px solid ${C.o1}28`,whiteSpace:"nowrap"}}>
+          <span style={{width:4,height:4,borderRadius:"50%",background:C.o1,boxShadow:`0 0 6px ${C.o1}`,animation:"pj_pulse 2s ease-in-out infinite",display:"inline-block"}}/>
+          <span style={{color:C.o1,fontSize:8,fontWeight:700,letterSpacing:"0.14em",textTransform:"uppercase"}}>Interactive 3D</span>
         </div>
       </div>
 
-      {/* Content */}
-      <div style={{padding:"clamp(16px,2.5vw,24px)",display:"flex",flexDirection:"column",gap:12,position:"relative",zIndex:1}}>
+      {/* ── Content ── */}
+      <div style={{padding:"clamp(16px,2.5vw,22px)",display:"flex",flexDirection:"column",gap:12,position:"relative",zIndex:1}}>
+
         <div>
-          <div style={{color,fontSize:9,fontWeight:700,letterSpacing:"0.14em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif",marginBottom:4,opacity:0.8}}>{subtitle}</div>
+          <div style={{color,fontSize:9,fontWeight:700,letterSpacing:"0.14em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif",marginBottom:3,opacity:0.8}}>{subtitle}</div>
           <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:"clamp(14px,1.7vw,18px)",letterSpacing:"-0.015em",lineHeight:1.2,color:hov?C.tw:C.ts,margin:0,transition:"color 0.25s ease"}}>{title}</h3>
         </div>
 
+        {/* Tabs */}
         <div style={{display:"flex",gap:3,background:"rgba(255,255,255,0.04)",borderRadius:9,padding:3,border:"1px solid rgba(255,255,255,0.06)"}}>
           {["overview","metrics","tech"].map(t=>(
             <button key={t} onClick={()=>setTab(t)} style={{flex:1,padding:"6px 0",borderRadius:7,border:tab===t?`1px solid ${color}40`:"1px solid transparent",background:tab===t?`${color}15`:"transparent",color:tab===t?color:C.tm,fontSize:10,fontWeight:700,letterSpacing:"0.06em",textTransform:"capitalize",cursor:"pointer",fontFamily:"'DM Sans',sans-serif",transition:"all 0.2s ease",outline:"none"}}>{t}</button>
           ))}
         </div>
 
+        {/* Tab content */}
         <div style={{minHeight:68}}>
           {tab==="overview"&&<p style={{color:C.tm,fontSize:"clamp(11.5px,1.3vw,13px)",lineHeight:1.8,margin:0,fontFamily:"'DM Sans',sans-serif"}}>{desc}</p>}
           {tab==="metrics"&&(
@@ -313,8 +579,9 @@ const ProjectCard = ({ project, index, visible }) => {
           )}
         </div>
 
+        {/* Quality bar */}
         <div>
-          <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}>
+          <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
             <span style={{color:C.tf,fontSize:9,fontWeight:700,letterSpacing:"0.12em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}}>Quality Score</span>
             <span style={{color,fontSize:9,fontWeight:800,fontFamily:"'DM Sans',sans-serif"}}>98%</span>
           </div>
@@ -325,12 +592,14 @@ const ProjectCard = ({ project, index, visible }) => {
           </div>
         </div>
 
+        {/* CTA */}
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",paddingTop:10,borderTop:`1px solid ${color}15`,gap:10,flexWrap:"wrap"}}>
           <a href={link} target="_blank" rel="noopener noreferrer"
             style={{display:"inline-flex",alignItems:"center",gap:8,padding:"9px 22px",borderRadius:9,textDecoration:"none",fontFamily:"'DM Sans',sans-serif",fontSize:12,fontWeight:700,letterSpacing:"0.06em",color:"#fff",background:`linear-gradient(135deg,${gradFrom},${gradTo})`,boxShadow:`0 4px 18px ${color}40`,transition:"all 0.28s ease",textTransform:"uppercase"}}
             onMouseEnter={e=>{e.currentTarget.style.transform="translateX(3px) scale(1.04)";e.currentTarget.style.boxShadow=`0 8px 28px ${color}60`;}}
-            onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.boxShadow=`0 4px 18px ${color}40`;}}
-          >→ View Live</a>
+            onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.boxShadow=`0 4px 18px ${color}40`;}}>
+            → View Live
+          </a>
           <div style={{display:"flex",alignItems:"center",gap:6}}>
             <span style={{width:6,height:6,borderRadius:"50%",background:C.accent,boxShadow:`0 0 8px ${C.accent}`,animation:"pj_pulse 2s ease-in-out infinite",display:"inline-block"}}/>
             <span style={{color:C.tm,fontSize:10,fontWeight:600,fontFamily:"'DM Sans',sans-serif"}}>Live</span>
@@ -340,9 +609,6 @@ const ProjectCard = ({ project, index, visible }) => {
     </article>
   );
 };
-
-/* ─── Stats ──────────────────────────────────────────────────────────── */
-const STATS=[{val:"500+",label:"Projects Delivered",color:C.o1},{val:"30+",label:"Countries Served",color:C.accent},{val:"99%",label:"Client Satisfaction",color:C.accentAlt},{val:"8+",label:"Years of Excellence",color:C.o2}];
 
 /* ─── Main Section ───────────────────────────────────────────────────── */
 const Projects = () => {
@@ -376,13 +642,9 @@ const Projects = () => {
         .pj-inner{position:relative;z-index:10;max-width:1440px;margin:0 auto;padding:0 clamp(16px,4vw,80px);display:flex;flex-direction:column;gap:clamp(32px,5vw,52px);}
         .pj-banner-wrap{position:relative;width:100%;height:clamp(180px,45vw,340px);}
         .pj-banner-card{width:100%;height:100%;border-radius:18px;overflow:hidden;border:1px solid rgba(79,142,247,0.28);position:relative;animation:pj_glowPulse 4s ease-in-out infinite;}
-        .pj-grid{display:grid;grid-template-columns:1fr;gap:clamp(14px,2vw,24px);}
+        .pj-grid{display:grid;grid-template-columns:1fr;gap:clamp(18px,2.5vw,28px);}
         @media(min-width:700px){.pj-grid{grid-template-columns:repeat(2,1fr);}}
         @media(min-width:1100px){.pj-grid{grid-template-columns:repeat(3,1fr);}}
-        .pj-card-top{display:flex;flex-direction:column;}
-        .pj-card-img{width:100%;height:clamp(160px,44vw,240px);flex-shrink:0;}
-        .pj-card-3d{width:100%;height:clamp(140px,36vw,210px);}
-        @media(min-width:1100px){.pj-card-top{flex-direction:row;height:clamp(200px,22vw,240px);}.pj-card-img{width:58%;height:100%;}.pj-card-3d{width:42%;height:100%;}}
         .pj-hl{font-family:'Sora',sans-serif;font-weight:800;line-height:1.04;letter-spacing:-0.03em;color:#F8FAFF;margin:0;font-size:clamp(1.75rem,7.8vw,2.35rem);}
         .pj-hl .pj-accent{display:block;background:linear-gradient(135deg,#93BBFF 0%,#4F8EF7 30%,#38BDF8 60%,#818CF8 85%,#4F8EF7 100%);background-size:300% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:pj_gradText 5s ease infinite;filter:drop-shadow(0 0 22px rgba(79,142,247,0.5));}
         .pj-shapes{display:none !important;}
@@ -405,6 +667,7 @@ const Projects = () => {
         </div>
 
         <div className="pj-inner">
+
           {/* Header */}
           <header style={{textAlign:"center",opacity:visible?1:0,animation:visible?"pj_fadeDown 0.8s ease both 0.05s":"none"}}>
             <div style={{marginBottom:12}}>
